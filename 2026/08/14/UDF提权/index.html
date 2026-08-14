@@ -42,7 +42,7 @@
 <meta property="og:image" content="https://kivvs.github.io/images/udf7.png">
 <meta property="og:image" content="https://img2024.cnblogs.com/blog/3795925/202607/3795925-20260724202248465-276900774.png">
 <meta property="article:published_time" content="2026-08-14T10:38:06.000Z">
-<meta property="article:modified_time" content="2026-08-14T10:42:24.945Z">
+<meta property="article:modified_time" content="2026-08-14T11:12:48.786Z">
 <meta property="article:author" content="kivvs">
 <meta property="article:tag" content="web">
 <meta name="twitter:card" content="summary_large_image">
@@ -419,15 +419,9 @@
 <h3 id="前提条件"><a href="#前提条件" class="headerlink" title="前提条件"></a><font style="color:rgb(51,51,51);">前提条件</font></h3><h4 id="一、-查看secure-file-priv的值"><a href="#一、-查看secure-file-priv的值" class="headerlink" title="一、*查看secure_file_priv的值"></a>一、*查看secure_file_priv的值</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">show</span> variables <span class="hljs-keyword">like</span> <span class="hljs-string">&#x27;%secure%&#x27;</span><br></code></pre></td></tr></table></figure>
 
 <ul>
-<li><pre><code class="hljs">secure_file_priv 没有值任意路径可读写
-</code></pre>
-</li>
-<li><pre><code class="hljs">secure_file_priv 为NULL禁止读写
-</code></pre>
-</li>
-<li><pre><code class="hljs">secure_file_priv 为对于目录，此目录可读写
-</code></pre>
-</li>
+<li>secure_file_priv 没有值任意路径可读写 </li>
+<li>secure_file_priv 为NULL禁止读写</li>
+<li>secure_file_priv 为对于目录，此目录可读写</li>
 </ul>
 <p><img src="https://kivvs.github.io/images/udf2.png" srcset="/img/loading.gif" lazyload><br><img src="https://kivvs.github.io/images/udf3.png" srcset="/img/loading.gif" lazyload></p>
 <p>load_file()：读取函数，且可进行网络请求into dumpfile()：只能写一行，原样写入 into out_file()：多行写入，具有特殊格式转换</p>
@@ -444,10 +438,10 @@
 <p><img src="https://kivvs.github.io/images/udf5.png" srcset="/img/loading.gif" lazyload></p>
 <p>注意：选取动态链接库版本错误则报Can’t open shared library ‘udf.dll’</p>
 <p><font style="color:rgb(51,51,51);">udf提权操作中的一个步骤是将我们的udf文件上传到mysql的检索目录中，Windows系统下mysql各版本的检索目录有所不同：</font></p>
-<h5 id="不同版本特性"><a href="#不同版本特性" class="headerlink" title="不同版本特性"></a><font style="color:rgb(51,51,51);">不同版本特性</font></h5><h6 id="1、-Mysql-5-0"><a href="#1、-Mysql-5-0" class="headerlink" title="1、 Mysql &lt; 5.0"></a>1、 Mysql &lt; 5.0</h6><p><font style="color:rgb(51,51,51);">导出路径随意。</font></p>
-<h6 id="2、-5-0"><a href="#2、-5-0" class="headerlink" title="2、 5.0 &lt;&#x3D; Mysql &lt; 5.1"></a>2、 5.0 &lt;&#x3D; Mysql &lt; 5.1</h6><p><font style="color:rgb(51,51,51);">Win2000导出路径： C:&#x2F;Winnt&#x2F;udf.dll</font></p>
-<p><font style="color:rgb(51,51,51);">其他Windows系统导出路径均为：C:&#x2F;Windows&#x2F;udf.dll或C:&#x2F;Windows&#x2F;system32&#x2F;udf.dll</font></p>
-<h6 id="3、-Mysql-5-1"><a href="#3、-Mysql-5-1" class="headerlink" title="3、 Mysql &gt;&#x3D; 5.1"></a>3、 Mysql &gt;&#x3D; 5.1</h6><p><font style="color:rgb(51,51,51);">Mysql安装目录的lib\plugin文件夹下，如果mysql安装时不选择完整安装或使用集成开发环境等情况下lib\plugin目录大概率是不存在的，需要自行创建。</font></p>
+<h5 id="不同版本特性"><a href="#不同版本特性" class="headerlink" title="不同版本特性"></a>不同版本特性</h5><h6 id="1、-Mysql-5-0"><a href="#1、-Mysql-5-0" class="headerlink" title="1、 Mysql &lt; 5.0"></a>1、 Mysql &lt; 5.0</h6><p>导出路径随意。</p>
+<h6 id="2、-5-0"><a href="#2、-5-0" class="headerlink" title="2、 5.0 &lt;&#x3D; Mysql &lt; 5.1"></a>2、 5.0 &lt;&#x3D; Mysql &lt; 5.1</h6><p>Win2000导出路径： C:&#x2F;Winnt&#x2F;udf.dll</p>
+<p>其他Windows系统导出路径均为：C:&#x2F;Windows&#x2F;udf.dll或C:&#x2F;Windows&#x2F;system32&#x2F;udf.dll</p>
+<h6 id="3、-Mysql-5-1"><a href="#3、-Mysql-5-1" class="headerlink" title="3、 Mysql &gt;&#x3D; 5.1"></a>3、 Mysql &gt;&#x3D; 5.1</h6><p>Mysql安装目录的lib\plugin文件夹下，如果mysql安装时不选择完整安装或使用集成开发环境等情况下lib\plugin目录大概率是不存在的，需要自行创建。</p>
 <p>版本大于5.1的时候，<code>lib\plugin</code>文件夹的创建方法：</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">select</span> @<span class="hljs-variable">@basedir</span>;<br>#查找到mysql的目录<br> <br><span class="hljs-keyword">select</span> <span class="hljs-string">&#x27;It is dll&#x27;</span> <span class="hljs-keyword">into</span> dumpfile <span class="hljs-string">&#x27;C:\\Program Files\\MySQL\\MySQL Server 5.1\\lib::$INDEX_ALLOCATION&#x27;</span>;<br>#利用NTFS ADS创建lib目录<br> <br><span class="hljs-keyword">select</span> <span class="hljs-string">&#x27;It is dll&#x27;</span> <span class="hljs-keyword">into</span> dumpfile <span class="hljs-string">&#x27;C:\\Program Files\\MySQL\\MySQL Server 5.1\\lib\\plugin::$INDEX_ALLOCATION&#x27;</span>;<br>#利用NTFS ADS创建plugin目录<br></code></pre></td></tr></table></figure>
 
@@ -604,6 +598,12 @@
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2026/08/14/PHP%E5%8E%9F%E7%94%9F%E7%B1%BB%E6%B1%87%E6%80%BB/" title="PHP原生类汇总">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">PHP原生类汇总</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">
