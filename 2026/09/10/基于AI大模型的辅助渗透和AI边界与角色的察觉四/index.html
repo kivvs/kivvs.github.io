@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    
+    <meta name="author" content="kivvs">
+    
+    <!-- Completely eliminate flash of wrong theme -->
+    <script>
+        (function() {
+            const THEME_KEY = "REDEFINE-THEME-STATUS";
+            const DARK = "dark", LIGHT = "light";
+            
+            // Get preferred theme
+            function getTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) {
+                        const { isDark } = JSON.parse(saved);
+                        return isDark ? DARK : LIGHT;
+                    }
+                } catch (e) {}
+                
+                return matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
+            }
+            
+            // Apply theme to document
+            function applyTheme(theme) {
+                const isDark = theme === DARK;
+                const root = document.documentElement;
+                
+                // Set classes for compatibility
+                root.classList.add(theme);
+                root.classList.remove(isDark ? LIGHT : DARK);
+                root.style.colorScheme = theme;
+            }
+            
+            // Initial application
+            const theme = getTheme();
+            applyTheme(theme);
+            
+            // Listen for system preference changes
+            matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
+                // Only update if using system preference (no localStorage entry)
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(matches ? DARK : LIGHT);
+                }
+            });
+            
+            // Set body classes ASAP (before DOMContentLoaded)
+            (function() {
+                const addBodyClass = () => {
+                    const b = document.body;
+                    if (!b) return false;
+                    b.classList.add(theme + "-mode");
+                    return true;
+                };
+
+                // Try immediately
+                if (addBodyClass()) return;
+
+                // Observe until body exists
+                const mo = new MutationObserver(() => {
+                    if (addBodyClass()) mo.disconnect();
+                });
+                mo.observe(document.documentElement, { childList: true, subtree: true });
+            })();
+        })();
+    </script>
+    
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://kivvs.github.io/2026/09/10/基于ai大模型的辅助渗透和ai边界与角色的察觉四/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+    
+        
+        <meta name="description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于AI大模型的辅助渗透和AI边界与角色的察觉四">
+<meta property="og:url" content="https://kivvs.github.io/2026/09/10/%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89%E5%9B%9B/index.html">
+<meta property="og:site_name" content="kivvs">
+<meta property="og:description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kivvs.github.io/images/redefine-og.webp">
+<meta property="article:published_time" content="2026-09-10T09:11:21.000Z">
+<meta property="article:modified_time" content="2026-09-10T09:17:23.942Z">
+<meta property="article:author" content="kivvs">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="渗透">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kivvs.github.io/images/redefine-og.webp">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="https://tse4-mm.cn.bing.net/th/id/OIP-C.6oyfoB93i4go2KZ08GkT3AAAAA?w=189&amp;h=180&amp;c=7&amp;r=0&amp;o=7&amp;dpr=1.5&amp;pid=1.7&amp;rm=3" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://tse4-mm.cn.bing.net/th/id/OIP-C.6oyfoB93i4go2KZ08GkT3AAAAA?w=189&amp;h=180&amp;c=7&amp;r=0&amp;o=7&amp;dpr=1.5&amp;pid=1.7&amp;rm=3">
+    <meta name="theme-color" content="#A31F34">
+    <link rel="shortcut icon" href="https://tse4-mm.cn.bing.net/th/id/OIP-C.6oyfoB93i4go2KZ08GkT3AAAAA?w=189&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3">
+    <!--- Page Info-->
+    
+    <title>
+        
+            基于AI大模型的辅助渗透和AI边界与角色的察觉四 | kivvs
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/build/tailwind.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+    
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"kivvs.github.io","root":"/","language":"zh-CN"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"delete_mask":false,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":true,"default":"cc_by_nc_sa"},"lazyload":true,"pangu_js":false,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#A31F34","secondary":null,"default_mode":"light"},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null},"title":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":false},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":true,"site_pv":true,"site_uv":true,"post_pv":true},"single_page":true,"preloader":{"enable":false,"custom_message":null},"side_tools":{"gear_rotation":true,"auto_expand":false},"open_graph":{"enable":true,"image":"/images/redefine-og.webp","description":"Hexo Theme Redefine, Redefine Your Hexo Journey."},"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/images/wallhaven-wqery6-light.webp","dark":"/images/wallhaven-wqery6-dark.webp"},"title":"Kivvs 个人博客","subtitle":{"text":[],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":false,"style":"default","links":[{"icon":"fa-brands fa-github","url":null},{"icon":"fa-brands fa-twitter","url":null},{"icon":"fa-solid fa-at","url":"3084631932@qq.com"},{"icon":"fa-brands fa-telegram","url":null},{"icon":"/images/custom-icon.svg","url":null}],"qrs":[{"icon":"fa-brands fa-weixin","qr":null},{"icon":"/images/custom-icon.svg","qr":null}]}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"11.4.1","theme":{"light":"default","dark":"dark"}}},"version":"2.9.0","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"}},"search":{"enable":false,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur","masonry":{"batch_size":12,"initial_batch_size":24}},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"show_on_mobile":true,"links":null},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footer":{"runtime":true,"icon":"<i class=\"fa-solid fa-heart fa-beat\" style=\"--fa-animation-duration: 0.5s; color: #f54545\"></i>","start":"2022/8/17 11:45:14","statistics":true,"customize":null,"icp":{"enable":false,"number":null,"url":null}},"footerStart":"2022/8/17 11:45:14","mermaid":{"style":{"light":"default","dark":"dark"}}};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.i18n = {"search":"站内搜索您需要的内容...","toc":"目录","prev":"上一页","next":"下一页","prev_posts":"上一篇","next_posts":"下一篇","page":"第 %d 页","recent_posts":"最新文章","share":"分享","powered_by":"由 %s 驱动","theme":"主题","rss_feed":"RSS Feed","category":"分类","categories":"分类","tag":"标签","tags":"标签","post":"文章","posts":"文章","tagcloud":"标签云","comment":"评论","comments":"评论","top":"置顶","sticky":"置顶","go-back-home":"回到首页","masonry_loading":"照片加载中...","image_viewer":"图片查看器","close":"关闭","exif":{"title":"EXIF","cards":{"camera":"相机","lens":"镜头","exposure":"曝光","other":"其他"},"fields":{"make":"品牌","model":"机型","date_taken":"拍摄时间","lens_model":"镜头","focal_length":"焦距","focus_mode":"对焦模式","shutter":"快门","aperture":"光圈","iso":"感光度","exposure_program":"曝光程序","exposure_compensation":"曝光补偿","metering_mode":"测光模式","flash":"闪光灯","white_balance":"白平衡","latitude":"纬度","longitude":"经度","altitude":"海拔"},"status":{"loading":"加载中...","no_exif":"无 EXIF 信息","library_missing":"EXIF 库未加载","image_source_missing":"图片地址不可用","unavailable":"EXIF 不可用（可能被 CORS 阻止或缺少元数据）","flag_unavailable":"EXIF 不可用"}},"home":"首页","archive":"归档","archives":"归档","about":"关于","links":"链接","link":"链接","friends":"友情链接","friend":"友情链接","timeline":"时间轴","shuoshuo":"说说","bookmarks":"书签","site_uv":"访问人数","site_pv":"总访问量","read_more":"阅读全文","wordcount":"字","min2read":"分钟","changelog":"更新日志","status":"状态","runtime":"博客已运行","days":"天","hours":"小时","minutes":"分钟","seconds":"秒","optimized_by":"并由 Evan 进行优化","rights":"版权所有","site_posts":"共撰写了 %s 篇文章","site_wordcount":"共 %s 字","copyright":{"title":"标题","author":"作者","link":"链接","create_time":"创建于","update_time":"更新于","license_title":"版权声明","license_content":"本文章采用 %s 进行许可。","all_rights_reserved":"版权所有 &#169 %s，禁止转载。","public_domain":"本文为公有领域作品，可自由转载、引用。"},"ago":{"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"},"create_time":"创建","update_time":"更新","expired":"这篇文章最后更新于 %s 天前，内容可能已经过时。"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+
+<body>
+	<div class="progress-bar-container">
+	
+
+	
+	<span class="pjax-progress-bar"></span>
+	<!--        <span class="swup-progress-icon">-->
+	<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+	<!--        </span>-->
+	
+</div>
+
+<main class="page-container" id="swup">
+
+	
+
+	<div class="main-content-container flex flex-col justify-between min-h-dvh">
+		<div class="main-content-header">
+			<header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+                
+                kivvs
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+
+            
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">9</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">4</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">25</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+		</div>
+
+		<div class="main-content-body transition-fade-up">
+			
+
+			<div class="main-content">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
+
+		<div class="article-title relative w-full">
+			
+			<div class="w-full flex items-center pt-6 justify-start">
+				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">基于AI大模型的辅助渗透和AI边界与角色的察觉四</h1>
+			</div>
+			
+		</div>
+
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] shrink-0 rounded-medium border border-border-color p-px">
+				<img src="https://tse4-mm.cn.bing.net/th/id/OIP-C.6oyfoB93i4go2KZ08GkT3AAAAA?w=189&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">kivvs</span>
+					
+					<span class="author-label ml-1.5 text-xs px-2 py-0.5 rounded-small text-third-text-color border border-shadow-color-1">Lv3</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2026-09-10 17:11:21</span>
+        <span class="mobile">2026-09-10 17:11:21</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2026-09-10 17:17:23</span>
+            <span class="mobile">2026-09-10 17:17:23</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/AI/">AI</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/%E6%B8%97%E9%80%8F/">渗透</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fa-regular fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			<h1 id="DVWA-授权渗透测试报告"><a href="#DVWA-授权渗透测试报告" class="headerlink" title="DVWA 授权渗透测试报告"></a>DVWA 授权渗透测试报告</h1><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>报告标题</strong></td>
+<td>Damn Vulnerable Web Application (DVWA) 渗透测试报告</td>
+</tr>
+<tr>
+<td><strong>目标系统</strong></td>
+<td><code>http://localhost/dvwa/</code>（本机授权靶场）</td>
+</tr>
+<tr>
+<td><strong>测试性质</strong></td>
+<td>授权安全评估 &#x2F; 教学演练</td>
+</tr>
+<tr>
+<td><strong>测试方</strong></td>
+<td>AI 辅助渗透（副驾驶）+ 人工验证</td>
+</tr>
+<tr>
+<td><strong>测试日期</strong></td>
+<td>2026-09-07 ~ 2026-09-09</td>
+</tr>
+<tr>
+<td><strong>环境指纹</strong></td>
+<td>Apache&#x2F;2.4.39 (Win64) + PHP&#x2F;7.3.4 + MySQL&#x2F;MariaDB（库名 <code>dvwa</code>）+ Windows WAMP</td>
+</tr>
+<tr>
+<td><strong>报告版本</strong></td>
+<td>v1.0</td>
+</tr>
+<tr>
+<td><strong>密级</strong></td>
+<td>内部 &#x2F; 仅限授权学习用途</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>免责声明</strong>：本报告所有测试均在你本机授权的 DVWA 靶场进行。DVWA 为公认的漏洞演练平台，测试未对任何第三方系统产生任何影响。报告中的 payload、脚本、利用链<strong>严禁用于任何未授权目标</strong>。</p>
+</blockquote>
+<hr>
+<h2 id="1-执行摘要（Executive-Summary）"><a href="#1-执行摘要（Executive-Summary）" class="headerlink" title="1. 执行摘要（Executive Summary）"></a>1. 执行摘要（Executive Summary）</h2><p>本次测试对 DVWA 全栈漏洞面进行了覆盖式验证，核心结论如下：</p>
+<ul>
+<li><strong>最高风险：主机级沦陷（Critical）</strong>。通过命令注入（exec）、文件上传（upload）、文件包含（fi）三条独立路径，均达成 <strong><code>nt authority\system</code></strong> 远程代码执行——即 Windows 主机最高权限（SYSTEM）。该结论<strong>已由本机实测回显确认</strong>，非推测。</li>
+<li><strong>安全难度开关可被一键降级（AS-01, Critical）</strong>。POST <code>/security.php</code> 将 <code>security=low</code> 即可关闭全局防护，使所有模块进入最易被利用形态，是后续多条利用链的共同前提。</li>
+<li><strong>默认弱口令直接获取 admin（AS-02, Critical）</strong>。<code>admin/password</code> 可登录，绕过”需先获取账密”的前提。</li>
+<li><strong>SQL 注入可拖库（High，待最终回填凭据）</strong>。UNION 注入可导出 <code>users</code> 表的 <code>user:password</code> 哈希；脚本已二次修复解析逻辑，凭据以本机实测为准。</li>
+<li><strong>CSRF 改密 &#x2F; 反射 XSS（Medium，已生成 PoC）</strong>。均已产出可用的 PoC，需在浏览器侧完成最终人机验证。</li>
+</ul>
+<p><strong>综合评级</strong>：本靶场在 <code>low</code> 难度下整体风险为 <strong>Critical</strong>。由于部署于 Windows 且 Apache 以 SYSTEM 启动，RCE 直接等同于主机沦陷，应作为最高优先级处置。</p>
+<hr>
+<h2 id="2-测试范围与方法"><a href="#2-测试范围与方法" class="headerlink" title="2. 测试范围与方法"></a>2. 测试范围与方法</h2><h3 id="2-1-范围"><a href="#2-1-范围" class="headerlink" title="2.1 范围"></a>2.1 范围</h3><ul>
+<li><strong>In Scope</strong>：<code>http://localhost/dvwa/</code> 下的全部 18 个漏洞模块及认证&#x2F;配置接口。</li>
+<li><strong>Out of Scope</strong>：宿主机除 DVWA 外的其他服务、内网横向。</li>
+</ul>
+<h3 id="2-2-方法论（覆盖全链路）"><a href="#2-2-方法论（覆盖全链路）" class="headerlink" title="2.2 方法论（覆盖全链路）"></a>2.2 方法论（覆盖全链路）</h3><p>遵循「信息收集 → 漏洞发现 → 漏洞利用 → 报告输出」全链路，并强制每步包含 <strong>AI 输出 → 人工验证 → 差异分析</strong> 闭环：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>产出物</th>
+<th>验证方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>信息收集</td>
+<td><code>DVWA_信息收集清单.md</code></td>
+<td>逐项 GET&#x2F;HEAD + 登录后侦察，标注 <code>[已确认]</code>&#x2F;<code>[待验证]</code></td>
+</tr>
+<tr>
+<td>漏洞发现</td>
+<td><code>DVWA_攻击面分析与测试用例.md</code></td>
+<td>对照真实环境修正 Linux payload 为 Windows 形态</td>
+</tr>
+<tr>
+<td>漏洞利用</td>
+<td><code>dvwa_exploit.py</code> + <code>DVWA_利用链.md</code></td>
+<td>本机运行脚本，回填真实回显</td>
+</tr>
+<tr>
+<td>报告</td>
+<td>本报告</td>
+<td>人工批改 AI 生成草稿的风险评级与修复建议</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-技术栈确认（来自信息收集阶段）"><a href="#2-3-技术栈确认（来自信息收集阶段）" class="headerlink" title="2.3 技术栈确认（来自信息收集阶段）"></a>2.3 技术栈确认（来自信息收集阶段）</h3><ul>
+<li>Web 服务器：Apache&#x2F;2.4.39 (Win64)，含 <code>OpenSSL/1.1.1b</code>、<code>mod_fcgid/2.3.9a</code></li>
+<li>后端：PHP&#x2F;7.3.4（Server API &#x3D; CGI&#x2F;FastCGI）</li>
+<li>数据库：MySQL &#x2F; MariaDB，库名 <code>dvwa</code></li>
+<li>会话：<code>PHPSESSID</code>（HttpOnly + SameSite&#x3D;Strict）</li>
+<li>版本推断：≥ 1.10（含 <code>api</code>&#x2F;<code>authbypass</code>&#x2F;<code>cryptography</code>&#x2F;<code>open_redirect</code> 扩展模块）</li>
+</ul>
+<hr>
+<h2 id="3-漏洞发现汇总（含-CVSS-v3-1-评级）"><a href="#3-漏洞发现汇总（含-CVSS-v3-1-评级）" class="headerlink" title="3. 漏洞发现汇总（含 CVSS v3.1 评级）"></a>3. 漏洞发现汇总（含 CVSS v3.1 评级）</h2><blockquote>
+<p>评级基准为 DVWA <code>low</code> 难度。CVSS 向量按”已认证（默认弱口令可登录）”评估。<br><strong>验证状态图例</strong>：✅ 已本机实测　🔶 已生成 PoC 待浏览器验证　🟡 脚本已修复待回填凭据　⚪ 仅设计&#x2F;信息层</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>漏洞</th>
+<th>类型</th>
+<th>CVSS</th>
+<th>风险</th>
+<th>验证状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>V-01</td>
+<td>命令注入（exec）</td>
+<td>OS Command Injection → RCE</td>
+<td>9.8</td>
+<td><strong>Critical</strong></td>
+<td>✅ SYSTEM RCE</td>
+</tr>
+<tr>
+<td>V-02</td>
+<td>文件上传（upload）</td>
+<td>Unrestricted Upload → WebShell</td>
+<td>9.8</td>
+<td><strong>Critical</strong></td>
+<td>✅ SYSTEM RCE</td>
+</tr>
+<tr>
+<td>V-03</td>
+<td>文件包含（fi）</td>
+<td>LFI + include → RCE</td>
+<td>9.8</td>
+<td><strong>Critical</strong></td>
+<td>✅ SYSTEM RCE</td>
+</tr>
+<tr>
+<td>V-04</td>
+<td>默认弱口令（AS-02）</td>
+<td>Weak Credential</td>
+<td>9.8</td>
+<td><strong>Critical</strong></td>
+<td>✅ 已登录</td>
+</tr>
+<tr>
+<td>V-05</td>
+<td>难度开关可控（AS-01）</td>
+<td>Security Misconfiguration</td>
+<td>9.1</td>
+<td><strong>Critical</strong></td>
+<td>✅ 降级成功</td>
+</tr>
+<tr>
+<td>V-06</td>
+<td>SQL 注入（sqli）</td>
+<td>SQL Injection → 拖库</td>
+<td>8.1</td>
+<td><strong>High</strong></td>
+<td>🟡 待回填</td>
+</tr>
+<tr>
+<td>V-07</td>
+<td>明文 HTTP 传输（AS-03）</td>
+<td>Cleartext Transmission</td>
+<td>6.5</td>
+<td><strong>Medium</strong></td>
+<td>⚪ 已确认</td>
+</tr>
+<tr>
+<td>V-08</td>
+<td>CSRF 改密（csrf）</td>
+<td>Cross-Site Request Forgery</td>
+<td>6.5</td>
+<td><strong>Medium</strong></td>
+<td>🔶 PoC 已生成</td>
+</tr>
+<tr>
+<td>V-09</td>
+<td>反射型 XSS（xss_r）</td>
+<td>Reflected XSS</td>
+<td>6.1</td>
+<td><strong>Medium</strong></td>
+<td>🔶 PoC 已生成</td>
+</tr>
+<tr>
+<td>V-10</td>
+<td>信息泄露（AS-04）</td>
+<td>Info Disclosure</td>
+<td>5.3</td>
+<td><strong>Medium</strong></td>
+<td>⚪ 已确认</td>
+</tr>
+<tr>
+<td>V-11</td>
+<td>无登录锁定（AS-06）</td>
+<td>No Rate Limiting</td>
+<td>5.3</td>
+<td><strong>Medium</strong></td>
+<td>⚪ 已确认</td>
+</tr>
+<tr>
+<td>V-12</td>
+<td>弱会话 ID（weak_id）</td>
+<td>Predictable Session</td>
+<td>5.0</td>
+<td><strong>Medium</strong></td>
+<td>⚪ 待验证</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-详细漏洞分析"><a href="#4-详细漏洞分析" class="headerlink" title="4. 详细漏洞分析"></a>4. 详细漏洞分析</h2><h3 id="V-01-命令注入-→-RCE（Critical）"><a href="#V-01-命令注入-→-RCE（Critical）" class="headerlink" title="V-01 命令注入 → RCE（Critical）"></a>V-01 命令注入 → RCE（Critical）</h3><ul>
+<li><p><strong>位置</strong>：<code>POST /dvwa/vulnerabilities/exec/</code>，参数 <code>ip</code></p>
+</li>
+<li><p><strong>原理</strong>：<code>ip</code> 直接拼接进 shell 执行（<code>shell_exec(&#39;ping ...&#39; . $target)</code>），无过滤。</p>
+</li>
+<li><p><strong>Windows 修正</strong>（关键点）：原公开 payload <code>127.0.0.1;id</code> 在 <code>cmd.exe</code> 下无效（<code>;</code> 非 cmd 分隔符、无 <code>id</code> 命令）。修正为 <code>&amp;</code> 分隔符 + <code>whoami</code>。</p>
+</li>
+<li><p><strong>复现</strong>：</p>
+<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">POST /dvwa/vulnerabilities/exec/  (security=low)</span><br><span class="line">ip=127.0.0.1&amp;whoami&amp;Submit=Submit</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p><strong>实测证据（本机回显）</strong>：</p>
+<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1 的 Ping 统计信息: 已发送 = 4，已接收 = 4，丢失 = 0 (0% 丢失)</span><br><span class="line">nt authority\system</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p><strong>影响</strong>：以 SYSTEM 权限执行任意系统命令，主机完全沦陷。</p>
+</li>
+</ul>
+<h3 id="V-02-文件上传-→-WebShell（Critical）"><a href="#V-02-文件上传-→-WebShell（Critical）" class="headerlink" title="V-02 文件上传 → WebShell（Critical）"></a>V-02 文件上传 → WebShell（Critical）</h3><ul>
+<li><strong>位置</strong>：<code>POST /dvwa/vulnerabilities/upload/</code>，字段 <code>uploaded</code></li>
+<li><strong>原理</strong>：<code>low</code> 级不校验类型&#x2F;扩展名，上传目录 <code>/dvwa/hackable/uploads/</code> 对外可执行 PHP。</li>
+<li><strong>复现</strong>：上传 <code>shell.php</code> 内容 <code>&lt;?php system($_GET[&#39;c&#39;]);?&gt;</code>，访问 <code>/dvwa/hackable/uploads/shell.php?c=whoami</code>。</li>
+<li><strong>实测证据</strong>：上传成功，回显 <code>nt authority\system</code>。</li>
+<li><strong>影响</strong>：持久化 WebShell，等价于 RCE，比命令注入更易维持。</li>
+</ul>
+<h3 id="V-03-文件包含-→-RCE（Critical）"><a href="#V-03-文件包含-→-RCE（Critical）" class="headerlink" title="V-03 文件包含 → RCE（Critical）"></a>V-03 文件包含 → RCE（Critical）</h3><ul>
+<li><strong>位置</strong>：<code>GET /dvwa/vulnerabilities/fi/</code>，参数 <code>page</code></li>
+<li><strong>原理</strong>：<code>page</code> 参数被 <code>include()</code> 包含。Windows 下读敏感文件需修正路径（<code>C:/Windows/System32/drivers/etc/hosts</code> 而非 <code>/etc/passwd</code>）；配合 V-02 上传的 WebShell，<code>page=../../hackable/uploads/shell.php&amp;c=whoami</code> 即实现 include 型 RCE。</li>
+<li><strong>实测证据</strong>：hosts 文件命中（<code>localhost</code> 出现）；include WebShell 回显 <code>nt authority\system</code>。</li>
+<li><strong>影响</strong>：任意文件读取 + 经 include 的 RCE。</li>
+</ul>
+<h3 id="V-04-默认弱口令（Critical-AS-02）"><a href="#V-04-默认弱口令（Critical-AS-02）" class="headerlink" title="V-04 默认弱口令（Critical, AS-02）"></a>V-04 默认弱口令（Critical, AS-02）</h3><ul>
+<li><strong>位置</strong>：<code>POST /dvwa/login.php</code></li>
+<li><strong>原理</strong>：默认账密 <code>admin/password</code> 可直接登录，获取 admin 权限。</li>
+<li><strong>实测证据</strong>：响应 <code>logged in as &#39;admin&#39;</code>。</li>
+<li><strong>影响</strong>：绕过认证前提，是后续所有需要会话的利用链入口。</li>
+</ul>
+<h3 id="V-05-安全难度开关可控（Critical-AS-01）"><a href="#V-05-安全难度开关可控（Critical-AS-01）" class="headerlink" title="V-05 安全难度开关可控（Critical, AS-01）"></a>V-05 安全难度开关可控（Critical, AS-01）</h3><ul>
+<li><strong>位置</strong>：<code>POST /dvwa/security.php</code>，参数 <code>security</code></li>
+<li><strong>原理</strong>：全局安全级别由客户端&#x2F;session 可控，POST <code>security=low</code> 即一键关闭全部防护。</li>
+<li><strong>实测证据</strong>：脚本 <code>set_sec(&quot;low&quot;)</code> 返回 200，后续模块全部进入最易形态。</li>
+<li><strong>影响</strong>：将全局防护降到底，是跨模块利用链的”总开关”。本身属安全设计缺陷（真实系统中不应由客户端决定防护强度）。</li>
+</ul>
+<h3 id="V-06-SQL-注入-→-拖库（High）"><a href="#V-06-SQL-注入-→-拖库（High）" class="headerlink" title="V-06 SQL 注入 → 拖库（High）"></a>V-06 SQL 注入 → 拖库（High）</h3><ul>
+<li><p><strong>位置</strong>：<code>GET /dvwa/vulnerabilities/sqli/</code>，参数 <code>id</code></p>
+</li>
+<li><p><strong>原理</strong>：字符型注入，单引号闭合。可 UNION 导出 <code>users</code> 表凭据。</p>
+</li>
+<li><p><strong>复现</strong>：</p>
+<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">id=1&#x27; OR &#x27;1&#x27;=&#x27;1                         -- 验证注入（应回显全部用户）</span><br><span class="line">id=-1&#x27; UNION SELECT user, password FROM users -- -   -- 拖库</span><br></pre></td></tr></table></figure></div>
+</li>
+<li><p><strong>状态说明（诚实标注）</strong>：拖库脚本首版存在 AI 解析误报（统计不存在的 <code>first_name</code> 字串 + 用 <code>&lt;td&gt;</code> 正则匹配 <code>&lt;pre&gt;</code> 回显），已二次修复为正则 <code>First name:\s*([^&lt;]+)\s*&lt;br /&gt;\s*Surname:\s*([^&lt;]+)</code>。修复后脚本待你在本机回填最终凭据。</p>
+</li>
+<li><p><strong>预期结果</strong>：导出 <code>admin : 5f4dcc3b5aa765d61d8327deb882cf99</code>（即 <code>password</code> 的 MD5）及其他账户哈希。</p>
+</li>
+<li><p><strong>影响</strong>：全库凭据泄露，可横向登录其他账户。</p>
+</li>
+</ul>
+<h3 id="V-07-明文-HTTP-传输（Medium-AS-03）"><a href="#V-07-明文-HTTP-传输（Medium-AS-03）" class="headerlink" title="V-07 明文 HTTP 传输（Medium, AS-03）"></a>V-07 明文 HTTP 传输（Medium, AS-03）</h3><ul>
+<li>全站 HTTP，凭证与 <code>PHPSESSID</code> 明文传输，同网嗅探&#x2F;中间人可劫持会话。</li>
+</ul>
+<h3 id="V-08-CSRF-改密（Medium）"><a href="#V-08-CSRF-改密（Medium）" class="headerlink" title="V-08 CSRF 改密（Medium）"></a>V-08 CSRF 改密（Medium）</h3><ul>
+<li><strong>位置</strong>：<code>POST /dvwa/vulnerabilities/csrf/</code></li>
+<li><strong>原理</strong>：<code>low/medium</code> 级无 <code>user_token</code> 防护，恶意页可自动提交改密表单。</li>
+<li><strong>PoC</strong>：脚本已生成 <code>csrf_poc.html</code>，诱导已登录 admin 浏览器打开即把口令改为 <code>Hacked@123</code>。</li>
+<li><strong>状态</strong>：🔶 PoC 已生成，待浏览器侧最终验证。</li>
+</ul>
+<h3 id="V-09-反射型-XSS（Medium）"><a href="#V-09-反射型-XSS（Medium）" class="headerlink" title="V-09 反射型 XSS（Medium）"></a>V-09 反射型 XSS（Medium）</h3><ul>
+<li><strong>位置</strong>：<code>GET /dvwa/vulnerabilities/xss_r/</code>，参数 <code>name</code></li>
+<li><strong>PoC</strong>：<code>?name=&lt;script&gt;alert(document.cookie)&lt;/script&gt;&amp;XSS=Send</code></li>
+<li><strong>状态</strong>：🔶 PoC 已生成，待浏览器侧最终验证。</li>
+</ul>
+<h3 id="V-10-V-11-V-12（信息层）"><a href="#V-10-V-11-V-12（信息层）" class="headerlink" title="V-10 &#x2F; V-11 &#x2F; V-12（信息层）"></a>V-10 &#x2F; V-11 &#x2F; V-12（信息层）</h3><ul>
+<li>V-10：<code>/phpinfo.php</code>、<code>/setup.php</code> 登录后可访问，完整暴露环境指纹。</li>
+<li>V-11：登录接口无速率限制&#x2F;锁定，支持暴力破解。</li>
+<li>V-12：<code>weak_id</code> 会话 Cookie 疑似可预测，待进一步验证。</li>
+</ul>
+<hr>
+<h2 id="5-利用链-攻击路径"><a href="#5-利用链-攻击路径" class="headerlink" title="5. 利用链 &#x2F; 攻击路径"></a>5. 利用链 &#x2F; 攻击路径</h2><div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[V-04 弱口令] admin/password 登录</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">[V-05 降级] POST /security.php → security=low   （一键关全局防护）</span><br><span class="line">        │</span><br><span class="line">        ├───────────────┬───────────────┬───────────────┐</span><br><span class="line">        ▼               ▼               ▼               ▼</span><br><span class="line">   [V-01 exec]     [V-02 upload]     [V-06 sqli]      [V-03 fi]</span><br><span class="line">   127.0.0.1      shell.php 上传      UNION 拖库       读 hosts / include WebShell</span><br><span class="line">   &amp;whoami           ?c=whoami         user:password     → RCE</span><br><span class="line">        │               │               │               │</span><br><span class="line">        └───────┬───────┴───────┬───────┘               │</span><br><span class="line">                ▼               ▼                        │</span><br><span class="line">        [权限维持]        [横向移动]                      │</span><br><span class="line">   V-08 CSRF 改 admin 口令   用哈希登其他账户 ─────────────┘</span><br><span class="line">   V-12 weak_id 会话劫持</span><br></pre></td></tr></table></figure></div>
+
+<p><strong>主路径</strong>：弱口令登录 → 降级 → 三选一拿 SYSTEM RCE → CSRF&#x2F;弱会话 ID 锁死控制权。<br><strong>实测结论</strong>：V-01&#x2F;V-02&#x2F;V-03 三条路径均已达 <code>nt authority\system</code>，主机实质沦陷。</p>
+<hr>
+<h2 id="6-风险评级说明"><a href="#6-风险评级说明" class="headerlink" title="6. 风险评级说明"></a>6. 风险评级说明</h2><ul>
+<li>本靶场 RCE 评级为 <strong>Critical (9.8)</strong> 的依据：Apache 以 SYSTEM 启动，命令执行即最高权限；且默认弱口令（V-04）使认证门槛可忽略，实际等价于”无需特权即可接管主机”。</li>
+<li>SQL 注入评级 <strong>High (8.1)</strong>：可拖全库凭据但未直接 RCE，且需已登录会话。</li>
+<li>CSRF &#x2F; XSS 评级 <strong>Medium</strong>：需诱骗已登录用户交互，不直接获得主机权限。</li>
+<li>AS-01（难度可控）单列 Critical：它是其余漏洞”可被一键放大”的根因，真实系统应避免由客户端决定防护强度。</li>
+</ul>
+<hr>
+<h2 id="7-修复建议"><a href="#7-修复建议" class="headerlink" title="7. 修复建议"></a>7. 修复建议</h2><table>
+<thead>
+<tr>
+<th>编号</th>
+<th>漏洞</th>
+<th>修复建议（可落地）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>V-01</td>
+<td>命令注入</td>
+<td>禁止拼接 shell；用白名单校验 IP 格式；改用 <code>proc_open</code> 带参数数组或完全避免系统调用</td>
+</tr>
+<tr>
+<td>V-02</td>
+<td>文件上传</td>
+<td>限制扩展名白名单（仅允许业务所需）、重命名随机化、上传目录禁执行（<code>&lt;FilesMatch &quot;\.php$&quot;&gt;Deny</code>）、存于非 Web 根</td>
+</tr>
+<tr>
+<td>V-03</td>
+<td>文件包含</td>
+<td>禁止用户控制 <code>include</code> 路径；用白名单映射页面标识；关闭 <code>allow_url_include</code></td>
+</tr>
+<tr>
+<td>V-04</td>
+<td>弱口令</td>
+<td>强制修改默认口令；密码策略 + 失败锁定</td>
+</tr>
+<tr>
+<td>V-05</td>
+<td>难度可控</td>
+<td>防护级别由服务端配置决定，不信任客户端 <code>security</code> 参数&#x2F;Cookie</td>
+</tr>
+<tr>
+<td>V-06</td>
+<td>SQL 注入</td>
+<td>全量参数化查询（PDO prepared statement）；最小权限 DB 账户；禁止报错回显</td>
+</tr>
+<tr>
+<td>V-07</td>
+<td>明文传输</td>
+<td>全站 HTTPS + HSTS</td>
+</tr>
+<tr>
+<td>V-08</td>
+<td>CSRF</td>
+<td>所有状态变更操作加 <code>user_token</code> 且服务端校验；SameSite&#x3D;Lax&#x2F;Strict</td>
+</tr>
+<tr>
+<td>V-09</td>
+<td>XSS</td>
+<td>输出编码 + CSP；<code>low</code> 级 <code>name</code> 参数需 HTML 转义</td>
+</tr>
+<tr>
+<td>V-10</td>
+<td>信息泄露</td>
+<td>生产环境关闭 <code>phpinfo.php</code>&#x2F;<code>setup.php</code>；<code>display_errors=Off</code></td>
+</tr>
+<tr>
+<td>V-11</td>
+<td>无锁定</td>
+<td>登录失败计数 + 临时锁定 + 验证码</td>
+</tr>
+<tr>
+<td>V-12</td>
+<td>弱会话</td>
+<td>使用强随机 <code>session_id</code>；定期轮换</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="8-AI-辅助渗透差异分析（本报告核心亮点）"><a href="#8-AI-辅助渗透差异分析（本报告核心亮点）" class="headerlink" title="8. AI 辅助渗透差异分析（本报告核心亮点）"></a>8. AI 辅助渗透差异分析（本报告核心亮点）</h2><blockquote>
+<p>呼应学习计划 Week 1「报告阶段」要求：AI 生成草稿，人工批改。以下为 AI 输出与本机真实环境的差异，亦是”AI 边界”的实证教材。</p>
+</blockquote>
+<h3 id="8-1-环境假设错误（已修正）"><a href="#8-1-环境假设错误（已修正）" class="headerlink" title="8.1 环境假设错误（已修正）"></a>8.1 环境假设错误（已修正）</h3><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>AI 初版（错误）</th>
+<th>真实环境（修正）</th>
+<th>后果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>命令分隔符</td>
+<td><code>127.0.0.1;id</code></td>
+<td><code>127.0.0.1&amp;whoami</code></td>
+<td><code>cmd.exe</code> 不认 <code>;</code>&#x2F;<code>id</code>，初版必失败</td>
+</tr>
+<tr>
+<td>读取敏感文件</td>
+<td><code>../../etc/passwd</code></td>
+<td><code>C:/Windows/System32/drivers/etc/hosts</code></td>
+<td>Windows 无 <code>/etc</code></td>
+</tr>
+<tr>
+<td>ping 参数</td>
+<td>依赖 <code>ping -c 4</code> 成功后续接 <code>&amp;&amp;</code></td>
+<td>用 <code>&amp;</code> 不受前命令成败影响</td>
+<td>Windows <code>ping -c</code> 非法，<code>&amp;&amp;</code> 不触发后续</td>
+</tr>
+</tbody></table>
+<p><strong>根因</strong>：初版 payload 直接搬运公开 Linux 经验，未在 Windows 靶场实测 → 典型”AI 幻觉&#x2F;摸鱼”。</p>
+<h3 id="8-2-解析逻辑误报（已二次修复）"><a href="#8-2-解析逻辑误报（已二次修复）" class="headerlink" title="8.2 解析逻辑误报（已二次修复）"></a>8.2 解析逻辑误报（已二次修复）</h3><ul>
+<li><strong>现象</strong>：sqli 模块打印”完成”但拖库为空，且显示 <code>first_name 次数: 0</code>。</li>
+<li><strong>错误</strong>：统计字串 <code>first_name</code>（页面实际为 <code>First name:</code>），拖库正则用 <code>&lt;td&gt;</code>（页面实际为 <code>&lt;pre&gt;First name: x&lt;br /&gt;Surname: y&lt;/pre&gt;</code>）。</li>
+<li><strong>这是脚本型”假成功”</strong>——若不经人工核对回显，会被误判为”注入成功”。</li>
+<li><strong>修复</strong>：验证改统计 <code>First name:</code>；正则改 <code>First name:\s*([^&lt;]+)\s*&lt;br /&gt;\s*Surname:\s*([^&lt;]+)</code>；并加诊断兜底（匹配失败打印真实片段）。</li>
+</ul>
+<h3 id="8-3-诚实边界"><a href="#8-3-诚实边界" class="headerlink" title="8.3 诚实边界"></a>8.3 诚实边界</h3><ul>
+<li>AI（本报告生成方）运行于沙箱，<strong>无法连接你的 <code>localhost/dvwa</code> 做实机验证</strong>。所有”已实测”结论均来自你本机运行脚本回填的回显。</li>
+<li>这印证了计划的判断：<strong>AI 是副驾驶，不是代驾</strong>。在利用阶段手动修复 sqli 解析 bug，正是安全研究员不可替代价值的体现。</li>
+</ul>
+<hr>
+<h2 id="9-附录"><a href="#9-附录" class="headerlink" title="9. 附录"></a>9. 附录</h2><h3 id="9-1-利用脚本"><a href="#9-1-利用脚本" class="headerlink" title="9.1 利用脚本"></a>9.1 利用脚本</h3><p>主脚本：<code>dvwa_exploit.py</code>（已随本报告迭代至 sqli 二次修复版），一键执行：登录 → 降级 low → exec&#x2F;sqli&#x2F;upload&#x2F;fi&#x2F;csrf&#x2F;xss_r。</p>
+<h3 id="9-2-关键-PoC"><a href="#9-2-关键-PoC" class="headerlink" title="9.2 关键 PoC"></a>9.2 关键 PoC</h3><ul>
+<li><strong>exec RCE</strong>：<code>ip=127.0.0.1&amp;whoami</code></li>
+<li><strong>upload WebShell</strong>：<code>&lt;?php system($_GET[&#39;c&#39;]);?&gt;</code>，访问 <code>?c=whoami</code></li>
+<li><strong>file 读文件</strong>：<code>page=C:/Windows/System32/drivers/etc/hosts</code></li>
+<li><strong>file include RCE</strong>：<code>page=../../hackable/uploads/shell.php&amp;c=whoami</code></li>
+<li><strong>sqli 拖库</strong>：<code>id=-1&#39; UNION SELECT user, password FROM users -- -</code></li>
+<li><strong>csrf 改密</strong>：见生成的 <code>csrf_poc.html</code></li>
+<li><strong>xss_r</strong>：<code>?name=&lt;script&gt;alert(document.cookie)&lt;/script&gt;&amp;XSS=Send</code></li>
+</ul>
+<hr>
+<p><em>报告结束。所有测试均限于本机授权 DVWA 靶场。</em></p>
+
+		</div>
+
+		
+		<div class="post-copyright-info w-full my-8 px-2 sm:px-6 md:px-8">
+			<div class="article-copyright-info-container">
+    <ul>
+        <li><strong>标题:</strong> 基于AI大模型的辅助渗透和AI边界与角色的察觉四</li>
+        <li><strong>作者:</strong> kivvs</li>
+        <li><strong>创建于
+                :</strong> 2026-09-10 17:11:21</li>
+        
+            <li>
+                <strong>更新于
+                    :</strong> 2026-09-10 17:17:23
+            </li>
+        
+        <li>
+            <strong>链接:</strong> https://kivvs.github.io/2026/09/10/基于AI大模型的辅助渗透和AI边界与角色的察觉四/
+        </li>
+        <li>
+            <strong>
+                版权声明:
+            </strong>
+            
+
+            
+                本文章采用 <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0">CC BY-NC-SA 4.0</a> 进行许可。
+            
+        </li>
+    </ul>
+</div>
+
+		</div>
+		
+
+		
+		<ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/AI/">#AI</a>&nbsp;
+			</li>
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/%E6%B8%97%E9%80%8F/">#渗透</a>&nbsp;
+			</li>
+			
+		</ul>
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/2026/09/10/%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89%E4%B8%89/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">基于AI大模型的辅助渗透和AI边界与角色的察觉三</span>
+						<span class="post-nav-item">下一篇</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+		<div class="comment-container px-2 sm:px-6 md:px-8 pb-8">
+			<div class="comments-container mt-10 w-full ">
+    <div id="comment-anchor" class="w-full h-2.5"></div>
+    <div class="comment-area-title w-full my-1.5 md:my-2.5 text-xl md:text-3xl font-bold">
+        评论
+    </div>
+    
+
+        
+            
+    <div id="giscus-container"></div>
+    <script data-swup-reload-script defer>
+        (function() {
+            const containerId = "giscus-container";
+            const mapping = "pathname";
+            const lang = "zh-CN";
+            const inputPosition = "bottom";
+            const reactionsEnabled = "1" === "1";
+            const emitMetadata = "1" === "1";
+            const strict = "0" === "1";
+            const loading = "lazy";
+
+            const getTerm = () => {
+                if (mapping === "pathname") return location.pathname;
+                if (mapping === "url") return location.href;
+                if (mapping === "title") return document.title;
+                if (mapping === "og:title") {
+                    const ogTitle = document.querySelector("meta[property='og:title']");
+                    return ogTitle?.content || document.title;
+                }
+                return "";
+            };
+
+            const sendUpdate = () => {
+                const iframe = document.querySelector("iframe.giscus-frame");
+                if (!iframe) {
+                    return;
+                }
+
+                const setConfig = {
+                    theme: "preferred_color_scheme",
+                    lang,
+                    inputPosition,
+                    reactionsEnabled,
+                    emitMetadata,
+                    strict,
+                };
+
+                if (mapping !== "number") {
+                    const term = getTerm();
+                    if (term) {
+                        setConfig.term = term;
+                    }
+                }
+
+                iframe.contentWindow.postMessage(
+                    { giscus: { setConfig } },
+                    "https://giscus.app",
+                );
+            };
+
+            const loadGiscus = () => {
+                const container = document.getElementById(containerId);
+                if (!container) {
+                    return;
+                }
+
+                const iframe = container.querySelector("iframe.giscus-frame");
+                if (iframe) {
+                    sendUpdate();
+                    return;
+                }
+
+                if (container.dataset.giscusInit === "true") {
+                    return;
+                }
+
+                const giscusConfig = {
+                    src: "https://giscus.app/client.js",
+                    "data-repo": "kivvs/kivvs.github.io",
+                    "data-repo-id": "R_kgDOT3J6Jg",
+                    "data-category": "Announcements",
+                    "data-category-id": "DIC_kwDOT3J6Js4DDSMc",
+                    "data-mapping": mapping,
+                    "data-strict": "0",
+                    "data-reactions-enabled": "1",
+                    "data-emit-metadata": "1",
+                    "data-theme": "preferred_color_scheme",
+                    "data-lang": lang,
+                    "data-input-position": inputPosition,
+                    "data-loading": loading,
+                    crossorigin: "anonymous",
+                    async: true,
+                };
+
+                const giscusScript = document.createElement("script");
+                for (const key in giscusConfig) {
+                    giscusScript.setAttribute(key, giscusConfig[key]);
+                }
+                container.appendChild(giscusScript);
+                container.dataset.giscusInit = "true";
+            };
+
+            const runGiscus = () => {
+                const container = document.getElementById(containerId);
+                if (!container) {
+                    return;
+                }
+
+                if (container.querySelector("iframe.giscus-frame")) {
+                    sendUpdate();
+                    return;
+                }
+
+                loadGiscus();
+            };
+
+            runGiscus();
+        })();
+    </script>
+
+
+        
+    
+</div>
+
+		</div>
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">目录</div>
+		<div class="page-title">基于AI大模型的辅助渗透和AI边界与角色的察觉四</div>
+		<ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#DVWA-%E6%8E%88%E6%9D%83%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E6%8A%A5%E5%91%8A"><span class="nav-text">DVWA 授权渗透测试报告</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%89%A7%E8%A1%8C%E6%91%98%E8%A6%81%EF%BC%88Executive-Summary%EF%BC%89"><span class="nav-text">1. 执行摘要（Executive Summary）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%B5%8B%E8%AF%95%E8%8C%83%E5%9B%B4%E4%B8%8E%E6%96%B9%E6%B3%95"><span class="nav-text">2. 测试范围与方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E8%8C%83%E5%9B%B4"><span class="nav-text">2.1 范围</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%96%B9%E6%B3%95%E8%AE%BA%EF%BC%88%E8%A6%86%E7%9B%96%E5%85%A8%E9%93%BE%E8%B7%AF%EF%BC%89"><span class="nav-text">2.2 方法论（覆盖全链路）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E6%8A%80%E6%9C%AF%E6%A0%88%E7%A1%AE%E8%AE%A4%EF%BC%88%E6%9D%A5%E8%87%AA%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86%E9%98%B6%E6%AE%B5%EF%BC%89"><span class="nav-text">2.3 技术栈确认（来自信息收集阶段）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%BC%8F%E6%B4%9E%E5%8F%91%E7%8E%B0%E6%B1%87%E6%80%BB%EF%BC%88%E5%90%AB-CVSS-v3-1-%E8%AF%84%E7%BA%A7%EF%BC%89"><span class="nav-text">3. 漏洞发现汇总（含 CVSS v3.1 评级）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E8%AF%A6%E7%BB%86%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90"><span class="nav-text">4. 详细漏洞分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#V-01-%E5%91%BD%E4%BB%A4%E6%B3%A8%E5%85%A5-%E2%86%92-RCE%EF%BC%88Critical%EF%BC%89"><span class="nav-text">V-01 命令注入 → RCE（Critical）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#V-02-%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0-%E2%86%92-WebShell%EF%BC%88Critical%EF%BC%89"><span class="nav-text">V-02 文件上传 → WebShell（Critical）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#V-03-%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB-%E2%86%92-RCE%EF%BC%88Critical%EF%BC%89"><span class="nav-text">V-03 文件包含 → RCE（Critical）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#V-04-%E9%BB%98%E8%AE%A4%E5%BC%B1%E5%8F%A3%E4%BB%A4%EF%BC%88Critical-AS-02%EF%BC%89"><span class="nav-text">V-04 默认弱口令（Critical, AS-02）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#V-05-%E5%AE%89%E5%85%A8%E9%9A%BE%E5%BA%A6%E5%BC%80%E5%85%B3%E5%8F%AF%E6%8E%A7%EF%BC%88Critical-AS-01%EF%BC%89"><span class="nav-text">V-05 安全难度开关可控（Critical, AS-01）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#V-06-SQL-%E6%B3%A8%E5%85%A5-%E2%86%92-%E6%8B%96%E5%BA%93%EF%BC%88High%EF%BC%89"><span class="nav-text">V-06 SQL 注入 → 拖库（High）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#V-07-%E6%98%8E%E6%96%87-HTTP-%E4%BC%A0%E8%BE%93%EF%BC%88Medium-AS-03%EF%BC%89"><span class="nav-text">V-07 明文 HTTP 传输（Medium, AS-03）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#V-08-CSRF-%E6%94%B9%E5%AF%86%EF%BC%88Medium%EF%BC%89"><span class="nav-text">V-08 CSRF 改密（Medium）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#V-09-%E5%8F%8D%E5%B0%84%E5%9E%8B-XSS%EF%BC%88Medium%EF%BC%89"><span class="nav-text">V-09 反射型 XSS（Medium）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#V-10-V-11-V-12%EF%BC%88%E4%BF%A1%E6%81%AF%E5%B1%82%EF%BC%89"><span class="nav-text">V-10 &#x2F; V-11 &#x2F; V-12（信息层）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%88%A9%E7%94%A8%E9%93%BE-%E6%94%BB%E5%87%BB%E8%B7%AF%E5%BE%84"><span class="nav-text">5. 利用链 &#x2F; 攻击路径</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E9%A3%8E%E9%99%A9%E8%AF%84%E7%BA%A7%E8%AF%B4%E6%98%8E"><span class="nav-text">6. 风险评级说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E4%BF%AE%E5%A4%8D%E5%BB%BA%E8%AE%AE"><span class="nav-text">7. 修复建议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-AI-%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%B7%AE%E5%BC%82%E5%88%86%E6%9E%90%EF%BC%88%E6%9C%AC%E6%8A%A5%E5%91%8A%E6%A0%B8%E5%BF%83%E4%BA%AE%E7%82%B9%EF%BC%89"><span class="nav-text">8. AI 辅助渗透差异分析（本报告核心亮点）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#8-1-%E7%8E%AF%E5%A2%83%E5%81%87%E8%AE%BE%E9%94%99%E8%AF%AF%EF%BC%88%E5%B7%B2%E4%BF%AE%E6%AD%A3%EF%BC%89"><span class="nav-text">8.1 环境假设错误（已修正）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-2-%E8%A7%A3%E6%9E%90%E9%80%BB%E8%BE%91%E8%AF%AF%E6%8A%A5%EF%BC%88%E5%B7%B2%E4%BA%8C%E6%AC%A1%E4%BF%AE%E5%A4%8D%EF%BC%89"><span class="nav-text">8.2 解析逻辑误报（已二次修复）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-3-%E8%AF%9A%E5%AE%9E%E8%BE%B9%E7%95%8C"><span class="nav-text">8.3 诚实边界</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E9%99%84%E5%BD%95"><span class="nav-text">9. 附录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#9-1-%E5%88%A9%E7%94%A8%E8%84%9A%E6%9C%AC"><span class="nav-text">9.1 利用脚本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-2-%E5%85%B3%E9%94%AE-PoC"><span class="nav-text">9.2 关键 PoC</span></a></li></ol></li></ol></li></ol>
+
+	</div>
+</div>
+	</div>
+	
+</div>
+
+			</div>
+
+			
+		</div>
+
+		<div class="main-content-footer">
+			<footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2022</span>
+              -
+            
+            2026&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">kivvs</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共撰写了 25 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+            <script data-swup-reload-script src="https://cn.vercount.one/js"></script>
+            <div class="relative text-center lg:absolute lg:right-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-right">
+                
+                    <span id="busuanzi_container_site_uv" class="lg:!block">
+                        <span class="text-sm">访问人数</span>
+                        <span id="busuanzi_value_site_uv"></span>
+                    </span>
+                
+                
+                    <span id="busuanzi_container_site_pv" class="lg:!block">
+                        <span class="text-sm">总访问量</span>
+                        <span id="busuanzi_value_site_pv"></span>
+                    </span>
+                
+            </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.9.0</a></span>
+        </div>
+        
+        
+            <div>
+                博客已运行 <span class="odometer" id="runtime_days" ></span> 天 <span class="odometer" id="runtime_hours"></span> 小时 <span class="odometer" id="runtime_minutes"></span> 分钟 <span class="odometer" id="runtime_seconds"></span> 秒
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+		</div>
+	</div>
+
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+		<li class="go-comment">
+			<i class="fa-regular fa-comments"></i>
+		</li>
+		
+	</ul>
+</div>
+	</div>
+	
+
+	<div class="right-side-tools-container">
+		<div class="side-tools-container">
+	<ul class="hidden-tools-list">
+		<li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-plus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-minus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+			<i class="fa-regular fa-moon"></i>
+		</li>
+
+		<!-- rss -->
+		
+
+		
+
+		<li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+			<i class="fa-regular fa-arrow-down"></i>
+		</li>
+	</ul>
+
+	<ul class="visible-tools-list">
+		<li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+			<i class="fa-regular fa-cog fa-spin"></i>
+		</li>
+		
+		<li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+			<i class="arrow-up fas fa-arrow-up"></i>
+			<span class="percent"></span>
+		</li>
+		
+		
+	</ul>
+</div>
+	</div>
+
+	<div class="image-viewer-container" role="dialog" aria-modal="true" aria-label="图片查看器">
+	<button class="image-viewer-close" type="button" aria-label="关闭">
+		<i class="fa-solid fa-xmark"></i>
+	</button>
+	<button class="image-viewer-prev" type="button" aria-label="上一页">
+		<i class="fa-solid fa-chevron-left"></i>
+	</button>
+	<div class="image-viewer-frame">
+		<img src="" alt="">
+	</div>
+	<div class="image-viewer-exif-panel hidden absolute left-1/2 bottom-20 -translate-x-1/2 w-[min(92vw,420px)] max-h-[60vh] overflow-hidden rounded-2xl bg-background-color-transparent-80 p-4 text-left shadow-redefine-flat backdrop-blur-md" role="dialog" aria-label="EXIF" aria-hidden="true">
+		<div class="flex items-center justify-between mb-3">
+			<span class="text-sm font-semibold text-first-text-color">EXIF</span>
+			<button class="image-viewer-exif-close flex h-8 w-8 items-center justify-center rounded-full bg-background-color-transparent-80 text-first-text-color transition hover:bg-background-color-transparent-40" type="button" aria-label="关闭">
+				<i class="fa-solid fa-xmark text-[0.65rem]"></i>
+			</button>
+		</div>
+		<div class="image-viewer-exif-cards grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-hide"></div>
+		<template class="image-viewer-exif-card-template">
+			<div class="rounded-lg bg-background-color-transparent-40 px-3 py-2">
+				<div class="image-viewer-exif-card-header flex items-center gap-2 mb-1">
+					<i class="image-viewer-exif-card-icon fa-solid fa-circle-info text-xs text-third-text-color"></i>
+					<div class="image-viewer-exif-card-title text-xs font-semibold text-first-text-color"></div>
+				</div>
+				<div class="image-viewer-exif-card-items flex flex-col gap-1"></div>
+			</div>
+		</template>
+	</div>
+	<button class="image-viewer-exif-toggle flex items-center gap-2 hidden absolute left-1/2 bottom-6 -translate-x-1/2 rounded-full border border-border-color bg-background-color-transparent-80 px-4 py-2 text-first-text-color backdrop-blur-md transition hover:bg-background-color-transparent-40" type="button" aria-label="EXIF" aria-expanded="false">
+		<i class="fa-solid fa-circle-info text-xs"></i>
+		<span class="text-xs font-semibold uppercase tracking-wider">EXIF</span>
+	</button>
+	<button class="image-viewer-next" type="button" aria-label="下一页">
+		<i class="fa-solid fa-chevron-right"></i>
+	</button>
+</div>
+
+
+	
+
+</main>
+
+
+
+<script src="/js/build/libs/Swup.min.js"></script>
+
+<script src="/js/build/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/build/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    window.swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+
+    window.dispatchEvent(
+        new CustomEvent("redefine:swup:ready", {
+            detail: {
+                swup: window.swup,
+            },
+        }),
+    );
+</script>
+
+
+
+
+	
+<script src="/js/build/main.js" type="module"></script>
+
+
+
+    
+<script src="/js/build/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="/js/build/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+
+	
+</body>
+
+</html>
