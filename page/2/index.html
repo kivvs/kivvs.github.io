@@ -308,7 +308,7 @@
         <div class="label text-third-text-color text-sm">分类</div>
     </a>
     <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
-        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">27</div>
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">28</div>
         <div class="label text-third-text-color text-sm">文章</div>
     </a>
 </div>
@@ -348,7 +348,7 @@
         <div class="label text-third-text-color text-sm">分类</div>
     </a>
     <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
-        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">27</div>
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">28</div>
         <div class="label text-third-text-color text-sm">文章</div>
     </a>
 </div>
@@ -363,6 +363,48 @@
 			<div class="main-content">
 				<div class="home-content-container">
     <ul class="home-article-list">
+        
+            <li class="home-article-item">
+
+                
+
+                
+
+                
+                <div class="flex flex-col gap-5 px-7 pb-7 pt-7">
+                    <h3 class="home-article-title">
+                        <a href="/2026/08/14/CVE-2026-39363%EF%BC%9AVite%E5%BC%80%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E5%A4%8D%E7%8E%B0/">
+                            CVE-2026-39363：Vite开发服务器任意文件读取漏洞分析复现
+                        </a>
+                    </h3>
+
+                    <div class="home-article-content markdown-body">
+                        
+                            
+                            漏洞来源
+漏洞描述漏洞源于Vite dev server WebSocket暴露的fetchModule方法未正确执行server.fs访问控制检查，导致HTTP路径下原本受限的文件系统访问限制可被绕过。
+攻击者在满足特定条件下，可通过构造vite:invoke WebSocket事件，并结合file:&#x2F;&#x2F;…与?raw或?inline参数，读取开发机、CI环境或容器中的任...
+                        
+                    </div>
+
+                    <div class="home-article-meta-info-container">
+    <div class="home-article-meta-info">
+        <span><i class="fa-solid fa-calendars"></i>&nbsp;
+            <span class="home-article-date" data-date="Fri Aug 14 2026 23:04:27 GMT+0800">
+                
+                    2026-08-14
+                
+            </span>
+        </span>
+        
+        
+    </div>
+
+    <a href="/2026/08/14/CVE-2026-39363%EF%BC%9AVite%E5%BC%80%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E5%A4%8D%E7%8E%B0/">阅读全文<span class="seo-reader-text">CVE-2026-39363：Vite开发服务器任意文件读取漏洞分析复现</span>&nbsp;<i class="fa-solid fa-angle-right"></i></a>
+</div>
+
+                </div>
+            </li>
         
             <li class="home-article-item">
 
@@ -1016,77 +1058,6 @@ PHP原生类就是在标准PHP库中已经封装好的类，而在其中，有�
                 </div>
             </li>
         
-            <li class="home-article-item">
-
-                
-
-                
-
-                
-                <div class="flex flex-col gap-5 px-7 pb-7 pt-7">
-                    <h3 class="home-article-title">
-                        <a href="/2026/08/14/UDF%E6%8F%90%E6%9D%83/">
-                            UDF提权
-                        </a>
-                    </h3>
-
-                    <div class="home-article-content markdown-body">
-                        
-                            
-                            UDF提权
-简介UDF（user defind function）用户自定义函数，通过添加新函数，对MySQL的功能进行扩充。调用方式与一般系统自带的函数相同，例如user()，version()等函数。
-udf 文件后缀在windows与linux系统下分别为dll与so，即动态链接库文件，由C、C++编写。
-前提条件一、*查看secure_file_priv的值1show variabl...
-                        
-                    </div>
-
-                    <div class="home-article-meta-info-container">
-    <div class="home-article-meta-info">
-        <span><i class="fa-solid fa-calendars"></i>&nbsp;
-            <span class="home-article-date" data-date="Fri Aug 14 2026 18:38:06 GMT+0800">
-                
-                    2026-08-14
-                
-            </span>
-        </span>
-        
-            <span class="home-article-category">
-                <i class="fa-solid fa-folders"></i>&nbsp;
-            <ul>
-                
-                
-                    
-                        
-                        <li>
-                            <a href="/categories/web%E5%AD%A6%E4%B9%A0/">web学习</a>&nbsp;
-                        </li>
-                    
-                    
-                
-            </ul>
-        </span>
-        
-        
-            <span class="home-article-tag">
-                <i class="fa-solid fa-tags"></i>&nbsp;
-                <ul>
-                    
-                        <li>
-                            
-                            <a href="/tags/web/">web</a>&nbsp;
-                        </li>
-                    
-                </ul>
-            </span>
-        
-    </div>
-
-    <a href="/2026/08/14/UDF%E6%8F%90%E6%9D%83/">阅读全文<span class="seo-reader-text">UDF提权</span>&nbsp;<i class="fa-solid fa-angle-right"></i></a>
-</div>
-
-                </div>
-            </li>
-        
     </ul>
 
     <div class="home-paginator px-7 py-5">
@@ -1117,7 +1088,7 @@ udf 文件后缀在windows与linux系统下分别为dll与so，即动态链接�
                 
                 <p class="post-count space-x-0.5">
                     <span>
-                        共撰写了 27 篇文章
+                        共撰写了 28 篇文章
                     </span>
                     
                 </p>

